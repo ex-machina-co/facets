@@ -78,7 +78,10 @@ rules:
     - MUST include a "Non-goals" section
     - "Each capability in the Capabilities section MUST correspond to a product domain, not a feature within a domain. Use domain names (e.g., `execution`, `planning`) not domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). Check `openspec/specs/` for existing domain names before inventing new ones."
   tasks:
-    - Load the `viper-planning` skill before composing the plan — it defines all step types, naming conventions, and hard rules
     - Think, read, search, and explore to understand the problem before composing steps
     - Ask the user clarifying questions — don't make large assumptions about intent
-    - Compose VIPER steps that match the shape of the change (not every change needs all 5 step types)
+    - Write the tasks as you see them
+    - ONLY AFTER writing the tasks, load the `viper-planning` skill — it defines all step types, naming conventions, and hard rules
+      - You MUST write the tasks first before loading the skill
+      - You MUST NOT load the skill until you've written the tasks
+    - Reclassify each of the step you wrote as it's VIPER step type and prefix the step description with the type
