@@ -1,0 +1,28 @@
+{
+  "name": "@ex-machina/facets",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/plugin.ts",
+    "./plugin": "./src/plugin.ts"
+  },
+  "bin": {
+    "facets": "./src/cli.ts"
+  },
+  "scripts": {
+    "types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "comment-json": "^4.2.5",
+    "js-yaml": "^4.1.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/js-yaml": "^4.0.9"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

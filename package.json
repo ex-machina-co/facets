@@ -1,18 +1,24 @@
 {
-  "name": "@ex-machina/facets",
-  "module": "index.ts",
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@ex-machina/facets-monorepo",
+  "private": true,
   "type": "module",
-  "devDependencies": {
-    "@fission-ai/openspec": "^1.2.0",
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+  "packageManager": "bun@1.3.10",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
   },
   "scripts": {
-    "types": "tsc --noEmit"
+    "check": "bun turbo build types test",
+    "test": "bun turbo test",
+    "types": "bun turbo types",
+    "build": "bun turbo build"
   },
-  "dependencies": {
-    "@opencode-ai/plugin": "^1.2.15"
+  "devDependencies": {
+    "@fission-ai/openspec": "^1.2.0",
+    "@types/bun": "latest",
+    "turbo": "^2.5.0",
+    "typescript": "^5"
   }
 }
