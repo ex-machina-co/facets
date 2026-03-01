@@ -10,12 +10,21 @@
     ]
   },
   "scripts": {
-    "check": "bun turbo build types test",
+    "check": "biome check . && bun turbo build types test",
+    "lint": "biome check .",
+    "format": "biome check . --fix --unsafe",
     "test": "bun turbo test",
     "types": "bun turbo types",
-    "build": "bun turbo build"
+    "build": "bun turbo build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "bun run check && changeset publish --provenance",
+    "link": "bun link --cwd packages/facets && bun link --cwd packages/facets-mcp",
+    "unlink": "bun unlink --cwd packages/facets && bun unlink --cwd packages/facets-mcp"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.4",
+    "@changesets/cli": "^2.29.0",
     "@fission-ai/openspec": "^1.2.0",
     "@types/bun": "latest",
     "turbo": "^2.5.0",

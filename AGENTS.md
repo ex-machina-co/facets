@@ -7,6 +7,7 @@ Default to using Bun instead of Node.js.
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
 - Use `bunx <package> <command>` instead of `npx <package> <command>`
+- You MUST run OpenSpec commands with `bunx openspec ...` not `npx openspec ...`
 - Bun automatically loads .env, so don't use dotenv.
 
 ## APIs
@@ -21,7 +22,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Use `bun test` to run tests.
+Use `bun check` to run tests, linting, and typeschecking.
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
@@ -68,7 +69,7 @@ Bun.serve({
 })
 ```
 
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
+HTML files can import .tsx, .jsx, or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
 
 ```html#index.html
 <html>

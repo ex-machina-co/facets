@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": "./src/plugin.ts",
-    "./plugin": "./src/plugin.ts"
+    ".": "./src/index.ts"
   },
   "bin": {
     "facets": "./src/cli.ts"

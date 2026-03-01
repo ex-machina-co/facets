@@ -1,6 +1,6 @@
-import { tool } from '@opencode-ai/plugin'
-import path from 'path'
-import { access, rm } from 'fs/promises'
+import { access, rm } from 'node:fs/promises'
+import path from 'node:path'
+import { tool } from '@ex-machina/opencode-plugin'
 
 const SAFE_NAME = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/
 

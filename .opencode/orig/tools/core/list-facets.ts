@@ -1,6 +1,6 @@
-import { tool } from '@opencode-ai/plugin'
-import path from 'path'
+import path from 'node:path'
 import { listFacets } from '@facets/list'
+import { tool } from '@opencode-ai/plugin'
 
 export default tool({
   description: 'List available facets and their install status',

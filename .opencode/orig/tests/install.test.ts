@@ -27,7 +27,7 @@ describe('installBundle', () => {
   })
 
   it('installs a single agent matching the bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['build.md']
       return []
     })
@@ -44,7 +44,7 @@ describe('installBundle', () => {
   })
 
   it('installs multiple resources matching the same bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['plan.md']
       if (dir.endsWith('/commands')) return ['review.md']
       if (dir.endsWith('/skills')) return ['rspec-structure.md']
@@ -71,7 +71,7 @@ describe('installBundle', () => {
   })
 
   it('installs resources with different names than the bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['plan.md']
       return []
     })
@@ -86,7 +86,7 @@ describe('installBundle', () => {
   })
 
   it('skips resources that belong to a different bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['build.md', 'plan.md']
       return []
     })
@@ -105,7 +105,7 @@ describe('installBundle', () => {
   })
 
   it('returns not_found for resources without bundle field', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['orphan.md']
       return []
     })
@@ -118,12 +118,12 @@ describe('installBundle', () => {
   })
 
   it('installs skill as flat file to SKILL.md destination', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       return []
     })
     readTextSpy.mockResolvedValue(
-      '---\nbundle: sentry\nverify:\n  - "sentry --version"\n  - "sentry auth status"\n---\n'
+      '---\nbundle: sentry\nverify:\n  - "sentry --version"\n  - "sentry auth status"\n---\n',
     )
 
     const result = await installBundle('sentry', BASE, BUNDLES)
@@ -135,12 +135,12 @@ describe('installBundle', () => {
     })
     expect(copyResourceSpy).toHaveBeenCalledWith(
       `${BUNDLES}/skills/investigate-sentry.md`,
-      `${BASE}/skills/investigate-sentry/SKILL.md`
+      `${BASE}/skills/investigate-sentry/SKILL.md`,
     )
   })
 
   it('returns copy failure and stops on first copy error', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['build.md', 'plan.md']
       return []
     })
@@ -159,7 +159,7 @@ describe('installBundle', () => {
   })
 
   it('handles resource in array bundle format', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['rspec-structure.md']
       return []
     })
@@ -184,7 +184,7 @@ describe('installBundle', () => {
 describe('installBundle verification', () => {
   it('runs verify commands before copying files', async () => {
     const callOrder: string[] = []
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       return []
     })
@@ -203,7 +203,7 @@ describe('installBundle verification', () => {
   })
 
   it('does not copy files when verification fails', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       return []
     })
@@ -227,7 +227,7 @@ describe('installBundle verification', () => {
   })
 
   it('copies files when all verifications pass', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       if (dir.endsWith('/commands')) return ['sentry.md']
       return []
@@ -254,7 +254,7 @@ describe('installBundle verification', () => {
   })
 
   it('skips verification when no resources have verify commands', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['plan.md']
       return []
     })
@@ -268,7 +268,7 @@ describe('installBundle verification', () => {
   })
 
   it('deduplicates verify commands across resources', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       if (dir.endsWith('/commands')) return ['sentry.md']
       return []
@@ -305,11 +305,11 @@ describe('installBundle tools', () => {
     })
     expect(copyResourceSpy).toHaveBeenCalledWith(
       `${BUNDLES}/tools/viper/viper-write-plan.ts`,
-      `${BASE}/tools/viper-write-plan.ts`
+      `${BASE}/tools/viper-write-plan.ts`,
     )
     expect(copyResourceSpy).toHaveBeenCalledWith(
       `${BUNDLES}/tools/viper/viper-delete-plan.ts`,
-      `${BASE}/tools/viper-delete-plan.ts`
+      `${BASE}/tools/viper-delete-plan.ts`,
     )
   })
 

@@ -1,6 +1,6 @@
-import { tool } from '@opencode-ai/plugin'
-import path from 'path'
+import path from 'node:path'
 import { installFacet } from '@facets/install'
+import { tool } from '@opencode-ai/plugin'
 
 export default tool({
   description: 'Install a facet by name',
