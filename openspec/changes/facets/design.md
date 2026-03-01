@@ -9,7 +9,7 @@ Terminology used throughout this document follows `openspec/specs/TERMINOLOGY.md
 ## Goals / Non-Goals
 
 **Goals:**
-- Publish `@ex-machina/opencode-facets` as a usable npm package
+- Publish `@ex-machina/facets` as a usable npm package
 - Support local facets and remote facets (cached from a URL, then installed)
 - Provide both a CLI (for humans) and an OpenCode plugin (for agents)
 - Never execute manifest-declared `requires` commands without explicit user consent
@@ -95,7 +95,7 @@ prompt:
 Storage paths:
 
 - Local facets: platform-specific, in v1 `.opencode/facets/<name>/`
-- Cached facets: global, at `~/.cache/opencode-facets/<name>/` (or the OS-appropriate equivalent via `XDG_CACHE_HOME`)
+- Cached facets: global, at `~/.cache/facets/<name>/` (or the OS-appropriate equivalent via `XDG_CACHE_HOME`)
 
 The global cache is shared across all projects on the machine — adding a remote facet in one project makes it available to install in any other project without re-fetching. When support for other platforms is added, local facet paths will vary by platform but the global cache location stays the same.
 
@@ -141,7 +141,7 @@ The trade-off: discoverability is weaker — there's no `search` command. Accept
 
 ### The cache is global and opaque
 
-The global cache (`~/.cache/opencode-facets/`) is a machine-level implementation detail — not a project concept. Following the npm/Bun model, users never think about whether something is "cached": they add remote facets (which silently caches them), install them, update them, or remove them. The cache just makes offline installs work.
+The global cache (`~/.cache/facets/`) is a machine-level implementation detail — not a project concept. Following the npm/Bun model, users never think about whether something is "cached": they add remote facets (which silently caches them), install them, update them, or remove them. The cache just makes offline installs work.
 
 The facet list shows what the project declares in `facets.yaml` and whether each is installed — not what happens to be in the global cache. Cache state is never surfaced in the list. The only explicit cache operation is `cache clear`, matching `bun pm cache rm`.
 

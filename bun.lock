@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@ex-machina/opencode-facets",
+      "name": "@ex-machina/facets",
       "dependencies": {
         "@opencode-ai/plugin": "^1.2.15",
       },

@@ -35,7 +35,7 @@
 - [ ] 3.2 Propose: Present the install-status detection strategy and the cache directory layout for approval
 - [ ] 3.3 Implement: Implement `listFacets(projectRoot)` — scans local facets from `.opencode/facets/<name>/` and reads remote entries from `facets.yaml`; returns name, version, description, and installed status; no network or shell execution
 - [ ] 3.4 Implement: Implement `cacheFacet(url, projectRoot)` — fetches remote `facet.yaml` and referenced resources, resolves relative paths against source URL, records entry in `facets.yaml` and `facets.lock`
-- [ ] 3.5 Implement: Implement `clearCache()` — removes `~/.cache/opencode-facets/` without affecting local facets or installed resources
+- [ ] 3.5 Implement: Implement `clearCache()` — removes `~/.cache/facets/` without affecting local facets or installed resources
 - [ ] 3.6 Verify: Unit tests — list includes all local and remote declared facets, empty list on no declarations, relative resource paths resolved correctly on cache
 
 ## 4. Installation: Resource Installer
@@ -71,7 +71,7 @@
 - [ ] 6.7 Implement: Implement `remove <name>` command — calls `uninstallFacet`, confirms removal
 - [ ] 6.8 Implement: Implement `update [name]` command — re-fetches cached remote facets, reports version changes
 - [ ] 6.9 Implement: Implement `cache clear` subcommand — calls `clearCache`, confirms
-- [ ] 6.10 Verify: `bunx @ex-machina/opencode-facets --help` lists all commands; each command runs without crashing against a fixture project
+- [ ] 6.10 Verify: `bunx @ex-machina/facets --help` lists all commands; each command runs without crashing against a fixture project
 
 ## 7. End-to-End
 

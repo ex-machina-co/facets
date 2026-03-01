@@ -1,4 +1,4 @@
-# Plan: @ex-machina/opencode-facets
+# Plan: @ex-machina/facets
 
 A facet engine and OpenCode plugin for managing, distributing, and installing collections of AI agent configurations (skills, agents, commands, tools).
 
@@ -27,10 +27,10 @@ A **facet** is a named, versioned collection of OpenCode resources (agents, skil
 
 ### What is the engine?
 
-The engine is an npm package (`@ex-machina/opencode-facets`) that provides:
+The engine is an npm package (`@ex-machina/facets`) that provides:
 
 1. **An OpenCode plugin** — registers tools (`facet-list`, `facet-install`, `facet-add`, `facet-update`, `facet-remove`) so AI agents can manage facets
-2. **A CLI** — `bunx @ex-machina/opencode-facets install` to add the plugin to a project, plus commands for managing facets from the terminal
+2. **A CLI** — `bunx @ex-machina/facets install` to add the plugin to a project, plus commands for managing facets from the terminal
 3. **A manifest spec** — `facet.yaml` format for declaring facet contents
 4. **A dependency model** — `facets.yaml` (user-authored, like package.json) + `facets.lock` (auto-generated, like lockfile) for reproducible facet installations
 
@@ -89,11 +89,11 @@ Key files:
 
 Present the complete design for user approval. Do not write any files.
 
-**Package:** `@ex-machina/opencode-facets`
+**Package:** `@ex-machina/facets`
 
 **Directory structure:**
 ```
-opencode-facets/
+facets/
   src/
     index.ts                    # Default plugin export
     plugin/
@@ -181,9 +181,9 @@ local:
 
 ### Step 4 - Implement: Scaffold package
 
-Ensure the `opencode-facets` repo has the following foundational files:
+Ensure the `facets` repo has the following foundational files:
 
-- **`package.json`**: name `@ex-machina/opencode-facets`, type `module`, main `dist/index.js`, bin `opencode-facets` → `dist/cli.js`, files `["dist", "templates"]`, dependencies (`@opencode-ai/plugin`, `js-yaml`, `zod`, `comment-json`), devDependencies (`tsup`, `typescript`, `@types/bun`, `@biomejs/biome`, `concurrently`), scripts (`dev`, `build`, `types`, `lint`, `format`, `test`, `validate`)
+- **`package.json`**: name `@ex-machina/facets`, type `module`, main `dist/index.js`, bin `facets` → `dist/cli.js`, files `["dist", "templates"]`, dependencies (`@opencode-ai/plugin`, `js-yaml`, `zod`, `comment-json`), devDependencies (`tsup`, `typescript`, `@types/bun`, `@biomejs/biome`, `concurrently`), scripts (`dev`, `build`, `types`, `lint`, `format`, `test`, `validate`)
 - **`tsconfig.json`**: ESM, strict, Bun types, path aliases
 - **`tsup.config.ts`**: dual entry points — `src/index.ts` (plugin, ESM, dts) and `src/cli/index.ts` (CLI, ESM, banner with shebang)
 - **`biome.json`**: linting and formatting config
@@ -224,7 +224,7 @@ Port and adapt from the original bundle system. All engine code lives in `src/en
 
 ### Step 7 - Implement: Build the CLI
 
-- **`src/cli/commands/install.ts`** — Read `opencode.json` (or `opencode.jsonc`), add `@ex-machina/opencode-facets` to the `plugin` array if not present, write back
+- **`src/cli/commands/install.ts`** — Read `opencode.json` (or `opencode.jsonc`), add `@ex-machina/facets` to the `plugin` array if not present, write back
 - **`src/cli/commands/init.ts`** — Copy `templates/facets.yaml` to `.opencode/facets.yaml` if it doesn't exist. Create `.opencode/facets/` directory.
 - **`src/cli/commands/add.ts`** — Parse URL[@version] argument, add entry to `facets.yaml`, invoke fetcher to download and cache
 - **`src/cli/commands/remove.ts`** — Remove entry from `facets.yaml`, delete cached files, remove installed resources

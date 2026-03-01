@@ -1,5 +1,5 @@
 {
-  "name": "@ex-machina/opencode-facets",
+  "name": "@ex-machina/facets",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
