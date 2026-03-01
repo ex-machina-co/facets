@@ -2,14 +2,15 @@
 
 OpenCode has a native npm plugin mechanism for JS/TS tools, but no distribution story for the markdown-based resources (skills, agents, commands) that power most AI agent workflows. The community has filled this gap ad-hoc (plain GitHub repos, copy-paste) or via OCX, which uses a registry URL model and a "copy into your project" philosophy.
 
-This project ports an existing in-repo bundle system (`.opencode/orig/`) into a standalone, publishable npm package with a manifest-based model, a lockfile for reproducibility, and an OpenCode plugin so agents can manage facets themselves.
+This project ports an existing in-repo bundle system (`.opencode/orig/`) into a monorepo with two publishable npm packages — a platform-agnostic core library (`@ex-machina/facets`) and an OpenCode-specific plugin (`@ex-machina/opencode-facets`) — with a manifest-based model, a lockfile for reproducibility, and plugin tools so agents can manage facets themselves.
 
 Terminology used throughout this document follows `openspec/specs/TERMINOLOGY.md`: facets are **local** (in-repo), **cached** (downloaded from a remote URL), or **installed** (resources active in OpenCode). **Linked** facets (cross-project dev symlinks) are out of scope for v1.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Publish `@ex-machina/facets` as a usable npm package
+- Publish `@ex-machina/facets` as the core engine (registry, discovery, installation, CLI) — platform-agnostic
+- Publish `@ex-machina/opencode-facets` as the OpenCode plugin wrapping the core engine — published separately
 - Support local facets and remote facets (cached from a URL, then installed)
 - Provide both a CLI (for humans) and an OpenCode plugin (for agents)
 - Never execute manifest-declared `requires` commands without explicit user consent
@@ -180,11 +181,22 @@ The `facet.yaml` format is designed to describe resources for multiple platforms
 
 **Platform-specific resources live under `platforms.<name>`.** Custom tools (`.ts` files) are OpenCode-only and have no cross-platform equivalent. They live under `platforms.opencode.tools` in the manifest, making their platform-specificity explicit. This leaves room for future additions like `platforms.opencode.plugins` without restructuring the format.
 
-### Single npm package with dual entry points
+### Two packages: core library + platform plugin
 
-The plugin and CLI are shipped as one package with two entry points — one for the OpenCode plugin, one for the CLI binary. This simplifies versioning and distribution — one package to install, one version to track.
+The project is structured as a monorepo with two packages:
 
-**Alternative considered**: separate CLI package. Rejected — unnecessary complexity for v1 given the small surface area.
+- `@ex-machina/facets` — the core engine (registry schemas, discovery, installation, CLI). Platform-agnostic; no dependency on `@opencode-ai/plugin`.
+- `@ex-machina/opencode-facets` — the OpenCode plugin wrapping the core engine's functions as five agent-facing tools. Depends on `@ex-machina/facets` via workspace link.
+
+This separation exists for three reasons:
+
+1. **Separation of concerns** — the core engine can be used by other platforms or CLIs without pulling in OpenCode-specific dependencies.
+2. **Independent publishing** — the plugin can be versioned and released on its own cadence, and users who only want the CLI don't need `@opencode-ai/plugin`.
+3. **Future path** — once facets supports a plugin mechanism, `opencode-facets` should become a facet itself rather than a separate npm package.
+
+The monorepo uses Bun workspaces for package resolution and Turborepo for task orchestration (`typecheck`, `test`, `build`).
+
+**Previous decision**: single npm package with dual entry points. Reversed — the plugin and core have different dependency graphs and release audiences, making a single package artificially coupled.
 
 ## Risks / Trade-offs
 
