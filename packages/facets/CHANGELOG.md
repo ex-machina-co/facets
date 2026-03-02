@@ -1,5 +1,12 @@
 # @ex-machina/facets
 
+## 0.2.3
+
+### Patch Changes
+
+- ca6b89c: Signing commits is dumb!
+- 993b9f2: Sign commits
+
 ## 0.2.2
 
 ### Patch Changes
