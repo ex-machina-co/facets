@@ -1,0 +1,87 @@
+---
+title: "Project Configuration"
+description: "How facets.yaml and facets.lock track your project's facet dependencies."
+---
+
+Your project tracks facet dependencies in two files, both stored in `.opencode/`.
+
+## facets.yaml
+
+The dependency declaration file. Specifies which facets your project uses and where they come from.
+
+### Schema
+
+```yaml
+remote:
+  <name>:
+    url: <string>       # URL to the remote facet.yaml (required)
+    version: <string>   # Pinned version (optional)
+local:
+  - <string>            # Path to local facet directory
+```
+
+### Example
+
+```yaml
+remote:
+  viper:
+    url: https://example.com/facets/viper/facet.yaml
+    version: 1.2.0
+  openspec:
+    url: https://example.com/facets/openspec/facet.yaml
+local:
+  - my-custom-facet
+```
+
+### How it's managed
+
+| Action | Effect on facets.yaml |
+| --- | --- |
+| `facets add <url>` | Adds a `remote` entry with the URL and version |
+| `facets remove <name>` | Removes the entry from `remote` or `local` |
+| `facets init` | Creates the file if absent |
+| `facets update` | Updates the version in the `remote` entry |
+
+## facets.lock
+
+The lock file. Records exact versions and integrity hashes for reproducible installs.
+
+### Schema
+
+```yaml
+remote:
+  <name>:
+    url: <string>         # Exact fetch URL (required)
+    version: <string>     # Exact version from manifest (required)
+    integrity: <string>   # Content hash (required)
+```
+
+### Example
+
+```yaml
+remote:
+  viper:
+    url: https://example.com/facets/viper/facet.yaml
+    version: 1.2.0
+    integrity: sha256-a1b2c3d4e5f6...
+```
+
+### Integrity
+
+The `integrity` field is a SHA-256 hash of the raw manifest YAML content, formatted as `sha256-<hex>`. It's computed when the manifest is first fetched (during `facets add` or `facets update`) and can be used to detect if the remote manifest has changed unexpectedly.
+
+### How it's managed
+
+| Action | Effect on facets.lock |
+| --- | --- |
+| `facets add <url>` | Creates or updates the lock entry with URL, version, and integrity |
+| `facets update <name>` | Updates the lock entry if the remote version changed |
+| `facets remove <name>` | Lock entry is **not** removed (stale entries are harmless) |
+| `facets cache clear` | Lock file is **not** modified |
+
+## How they work together
+
+1. **`facets add`** — Fetches the manifest, writes both `facets.yaml` (dependency) and `facets.lock` (exact version + hash)
+2. **`facets install`** — Reads `facets.yaml` to find declared facets, resolves from local or cache, installs resources. Does not modify either file.
+3. **`facets update`** — Re-fetches from the URL in `facets.yaml`, compares against `facets.lock` to detect changes, updates both files.
+4. **`facets remove`** — Removes from `facets.yaml` only. Lock file entries persist but are inert.

@@ -1,0 +1,37 @@
+---
+title: "CLI Overview"
+description: "Command reference for the Facets CLI."
+icon: "terminal"
+---
+
+## Usage
+
+```sh
+bunx @ex-machina/facets <command> [options]
+```
+
+Or install globally:
+
+```sh
+bun add -g @ex-machina/facets
+facets <command> [options]
+```
+
+## Commands
+
+| Command | Description |
+| --- | --- |
+| [`init`](/cli/init) | Set up a project for facets |
+| [`list`](/cli/list) | List all facets and their status |
+| [`add <url>`](/cli/add) | Cache a remote facet by URL |
+| [`install [name]`](/cli/install) | Install a facet's resources |
+| [`remove <name>`](/cli/remove) | Remove a facet |
+| [`update [name]`](/cli/update) | Update cached remote facets |
+| [`cache clear`](/cli/cache-clear) | Clear the global facet cache |
+
+## Global options
+
+| Option | Description |
+| --- | --- |
+| `--help`, `-h` | Show help message |
+| `--version`, `-v` | Show version |

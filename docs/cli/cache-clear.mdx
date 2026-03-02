@@ -1,0 +1,34 @@
+---
+title: "facets cache clear"
+description: "Clear the global facet cache."
+---
+
+## Usage
+
+```sh
+facets cache clear
+```
+
+## What it does
+
+Deletes the entire global facet cache at `~/.cache/facets/` (or `$XDG_CACHE_HOME/facets/` if the XDG environment variable is set).
+
+## What it affects
+
+| Affected | Details |
+| --- | --- |
+| Cache directory | `~/.cache/facets/` is deleted entirely |
+
+## What it doesn't affect
+
+| Not affected | Details |
+| --- | --- |
+| `facets.yaml` | Your project's dependency declarations remain intact |
+| `facets.lock` | Lock file entries are preserved |
+| Installed resources | Files already installed in `.opencode/` are untouched |
+
+## When to use
+
+- To free disk space from cached facets you no longer use
+- To force a fresh download of all remote facets on next `facets add` or `facets update`
+- To troubleshoot issues with corrupted cache data

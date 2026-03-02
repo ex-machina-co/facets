@@ -1,0 +1,40 @@
+---
+title: "facets remove"
+description: "Remove a facet from your project."
+---
+
+## Usage
+
+```sh
+facets remove <name>
+```
+
+## Arguments
+
+| Argument | Description |
+| --- | --- |
+| `name` | Name of the facet to remove (required) |
+
+## What it does
+
+Removes a facet by uninstalling all its resources and cleaning up the project registry:
+
+1. **Load manifest** — Reads the facet manifest from local or cache to determine what resources were installed
+2. **Delete resources** from `.opencode/`:
+   - Skills — removes the entire directory (`.opencode/skills/<name>/`)
+   - Agents — removes the file (`.opencode/agents/<name>.md`)
+   - Commands — removes the file (`.opencode/commands/<name>.md`)
+   - Tools — removes the file (`.opencode/tools/<name>.ts`)
+3. **Update `facets.yaml`** — removes the facet entry from both `remote` and `local` sections
+
+## Example
+
+```sh
+facets remove viper
+# Removed: viper
+```
+
+## What it doesn't do
+
+- Does **not** delete the cached copy from `~/.cache/facets/`. Use `facets cache clear` to clean the cache.
+- Does **not** modify `facets.lock` — stale lock entries are harmless and will be overwritten if the facet is re-added.

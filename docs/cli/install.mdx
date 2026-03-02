@@ -1,0 +1,70 @@
+---
+title: "facets install"
+description: "Install a facet's resources into your project."
+---
+
+## Usage
+
+```sh
+facets install [name]
+```
+
+## Arguments
+
+| Argument | Description |
+| --- | --- |
+| `name` | Name of the facet to install (optional) |
+
+If no name is provided, installs **all declared facets** that aren't already installed.
+
+## What it does
+
+Installs a facet by copying its resources into your project's `.opencode/` directory. The process:
+
+1. **Resolve** — Looks for the facet in local sources (`.facets/<name>/`) first, then the cache (`~/.cache/facets/<name>/`)
+2. **Load** — Reads and validates `facet.yaml`
+3. **Prereq checks** — If the manifest declares `requires`, you're prompted to approve running the commands. Each command is executed (e.g., `gh --version`) and must succeed. Approval is cached at `~/.local/state/facets/prereqs/<name>` so you're only asked once per unique set of requirements.
+4. **Copy resources** to `.opencode/`:
+
+| Resource | Source | Destination | Processing |
+| --- | --- | --- | --- |
+| Skills | `skills/<name>/SKILL.md` | `.opencode/skills/<name>/SKILL.md` | Verbatim copy |
+| Agents | Prompt file | `.opencode/agents/<name>.md` | YAML frontmatter assembled from manifest |
+| Commands | Prompt file | `.opencode/commands/<name>.md` | YAML frontmatter assembled from manifest |
+| Tools | `opencode/tools/<name>.ts` | `.opencode/tools/<name>.ts` | Verbatim copy |
+
+## Example
+
+```sh
+# Install a specific facet
+facets install viper
+# Installed: viper
+#   skill: viper-planning
+#   agent: viper-agent
+
+# Install all uninstalled facets
+facets install
+```
+
+## Prerequisite checks
+
+When a facet declares `requires`, Facets runs those commands to verify dependencies are available. For example:
+
+```yaml
+requires:
+  - gh --version
+  - jq --version
+```
+
+The CLI will prompt before running these checks. Once approved and verified, the result is cached — if the `requires` list changes in a future update, you'll be prompted again.
+
+## Failure modes
+
+The install result is a discriminated union:
+
+| Result | Meaning |
+| --- | --- |
+| `success` | Resources installed successfully |
+| `not_found` | Facet not found in local sources or cache |
+| `prereq` | A prerequisite command failed |
+| `copy` | A resource file couldn't be copied |

@@ -1,0 +1,41 @@
+---
+title: "facets add"
+description: "Cache a remote facet by URL."
+---
+
+## Usage
+
+```sh
+facets add <url>
+```
+
+## Arguments
+
+| Argument | Description |
+| --- | --- |
+| `url` | URL to the remote `facet.yaml` manifest (required) |
+
+## What it does
+
+Fetches a remote facet manifest and caches it locally, making it available for installation. The full process:
+
+1. **Fetch** the `facet.yaml` from the given URL
+2. **Validate** the manifest against the schema
+3. **Cache** the manifest to `~/.cache/facets/<name>/facet.yaml`
+4. **Download resources** — all files referenced in the manifest (skill files, prompt files, tool files) are fetched by resolving relative paths against the manifest URL
+5. **Update project files**:
+   - Adds an entry to `facets.yaml` under `remote:`
+   - Records the version and integrity hash in `facets.lock`
+
+## Example
+
+```sh
+facets add https://example.com/facets/viper/facet.yaml
+# Cached: viper v1.2.0
+```
+
+After adding, the facet appears in `facets list` as `not installed`. Run `facets install` to materialize its resources.
+
+## Integrity
+
+The raw manifest content is hashed with SHA-256 and stored in `facets.lock` as `sha256-<hex>`. This lets Facets detect if a remote manifest has been tampered with or drifted between fetches.
