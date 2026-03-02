@@ -1,5 +1,10 @@
 {
   "name": "@ex-machina/facets",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ex-machina-co/facets",
+    "directory": "packages/facets"
+  },
   "version": "0.2.2",
   "type": "module",
   "exports": {
