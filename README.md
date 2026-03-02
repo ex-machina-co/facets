@@ -2,6 +2,10 @@
 
 A package manager and toolkit for facets — modular skills, agents, commands, and tools that extend AI coding assistants.
 
+## Documentation
+
+Full documentation is available at [agentfacets.io](https://agentfacets.io).
+
 ## Packages
 
 | Package                                     | NPM                      | Description                              |
