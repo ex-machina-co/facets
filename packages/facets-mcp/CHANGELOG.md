@@ -1,5 +1,15 @@
 # @ex-machina/facets-mcp
 
+## 0.1.4
+
+### Patch Changes
+
+- ca6b89c: Signing commits is dumb!
+- 993b9f2: Sign commits
+- Updated dependencies [ca6b89c]
+- Updated dependencies [993b9f2]
+  - @ex-machina/facets@0.2.3
+
 ## 0.1.3
 
 ### Patch Changes
