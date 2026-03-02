@@ -1,6 +1,6 @@
 import * as bun from '../bun'
-import * as verify from '../verify'
 import { listBundles } from '../list'
+import * as verify from '../verify'
 
 const fileExistsSpy = jest.spyOn(bun, 'fileExists')
 const readTextSpy = jest.spyOn(bun, 'readText')
@@ -28,7 +28,7 @@ describe('listBundles', () => {
   })
 
   it('groups a single resource under its bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['build.md']
       return []
     })
@@ -46,7 +46,7 @@ describe('listBundles', () => {
   })
 
   it('groups multiple resources under the same bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['plan.md']
       if (dir.endsWith('/commands')) return ['review.md']
       return []
@@ -75,7 +75,7 @@ describe('listBundles', () => {
   })
 
   it('handles array bundle field (resource in multiple bundles)', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['rspec-structure.md']
       return []
     })
@@ -89,7 +89,7 @@ describe('listBundles', () => {
   })
 
   it('excludes resources without bundle field', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['orphan.md']
       return []
     })
@@ -101,7 +101,7 @@ describe('listBundles', () => {
   })
 
   it('excludes resources without frontmatter', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['bare.md']
       return []
     })
@@ -113,7 +113,7 @@ describe('listBundles', () => {
   })
 
   it('marks bundle as installed when all resources are installed', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['build.md']
       return []
     })
@@ -127,7 +127,7 @@ describe('listBundles', () => {
   })
 
   it('marks bundle as not installed when any resource is not installed', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['plan.md']
       if (dir.endsWith('/commands')) return ['review.md']
       return []
@@ -143,7 +143,7 @@ describe('listBundles', () => {
   })
 
   it('handles skill names correctly', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       return []
     })
@@ -249,7 +249,7 @@ describe('listBundles tools', () => {
 
 describe('listBundles availability', () => {
   it('marks bundle as available when verify commands pass', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/commands')) return ['sentry.md']
       return []
     })
@@ -263,7 +263,7 @@ describe('listBundles availability', () => {
   })
 
   it('marks bundle as unavailable with verifyFailure when verify commands fail', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/commands')) return ['sentry.md']
       return []
     })
@@ -289,7 +289,7 @@ describe('listBundles availability', () => {
   })
 
   it('marks bundle as available when it has no verify commands', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/agents')) return ['build.md']
       return []
     })
@@ -302,7 +302,7 @@ describe('listBundles availability', () => {
   })
 
   it('one bundle failing does not block other bundles', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/commands')) return ['sentry.md', 'snowflake-setup.md']
       return []
     })
@@ -325,7 +325,7 @@ describe('listBundles availability', () => {
   })
 
   it('deduplicates verify commands across resources in the same bundle', async () => {
-    globSpy.mockImplementation(async (pattern, dir) => {
+    globSpy.mockImplementation(async (_pattern, dir) => {
       if (dir.endsWith('/commands')) return ['sentry.md']
       if (dir.endsWith('/skills')) return ['investigate-sentry.md']
       return []

@@ -1,6 +1,6 @@
+import { readdir } from 'node:fs/promises'
+import path from 'node:path'
 import { tool } from '@opencode-ai/plugin'
-import path from 'path'
-import { readdir } from 'fs/promises'
 
 export default tool({
   description: 'List VIPER plans and their artifacts',
@@ -18,7 +18,7 @@ export default tool({
           const files = await readdir(dirPath)
           const artifacts = files.filter((f) => f.endsWith('.md')).map((f) => f.replace(/\.md$/, ''))
           return { name: dir.name, artifacts }
-        })
+        }),
       )
 
       return JSON.stringify({ plans })

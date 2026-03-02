@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import yaml from 'js-yaml'
 import * as bun from './bun'
 import { parseVerifyCommands, runVerifyCommands, type VerifyFailure } from './verify'

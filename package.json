@@ -1,18 +1,33 @@
 {
-  "name": "@ex-machina/facets",
-  "module": "index.ts",
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@ex-machina/facets-monorepo",
+  "private": true,
   "type": "module",
-  "devDependencies": {
-    "@fission-ai/openspec": "^1.2.0",
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+  "packageManager": "bun@1.3.10",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
   },
   "scripts": {
-    "types": "tsc --noEmit"
+    "check": "biome check . && bun turbo build types test",
+    "lint": "biome check .",
+    "format": "biome check . --fix --unsafe",
+    "test": "bun turbo test",
+    "types": "bun turbo types",
+    "build": "bun turbo build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "bun run check && changeset publish --provenance",
+    "link": "bun link --cwd packages/facets && bun link --cwd packages/facets-mcp",
+    "unlink": "bun unlink --cwd packages/facets && bun unlink --cwd packages/facets-mcp"
   },
-  "dependencies": {
-    "@opencode-ai/plugin": "^1.2.15"
+  "devDependencies": {
+    "@biomejs/biome": "2.4.4",
+    "@changesets/cli": "^2.29.0",
+    "@fission-ai/openspec": "^1.2.0",
+    "@types/bun": "latest",
+    "turbo": "^2.5.0",
+    "typescript": "^5"
   }
 }
