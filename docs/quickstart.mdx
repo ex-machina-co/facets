@@ -1,0 +1,60 @@
+---
+title: "Quickstart"
+description: "Get up and running with Facets in under a minute."
+---
+
+## Initialize your project
+
+Run `facets init` in your project root. This creates the configuration files Facets needs:
+
+```sh
+bunx @ex-machina/facets init
+```
+
+This does two things:
+
+1. Registers the Facets MCP server in `.opencode/opencode.jsonc` so your AI assistant can manage facets
+2. Creates `.opencode/facets.yaml` — the dependency file that tracks which facets your project uses
+
+## Add a remote facet
+
+Add a facet by pointing to its manifest URL:
+
+```sh
+bunx @ex-machina/facets add https://example.com/facets/my-facet/facet.yaml
+```
+
+Facets fetches the manifest, validates it, downloads all referenced resources (skills, prompts, tools), and caches everything locally at `~/.cache/facets/`.
+
+The facet is now registered in your `facets.yaml` and its exact version is locked in `facets.lock`.
+
+## Install the facet
+
+Install copies the facet's resources into your project:
+
+```sh
+bunx @ex-machina/facets install
+```
+
+Without a name, this installs all declared facets that aren't yet installed. Resources are placed in your `.opencode/` directory:
+
+- Skills go to `.opencode/skills/<name>/SKILL.md`
+- Agents go to `.opencode/agents/<name>.md`
+- Commands go to `.opencode/commands/<name>.md`
+- Tools go to `.opencode/tools/<name>.ts`
+
+## Verify
+
+Check that everything is installed:
+
+```sh
+bunx @ex-machina/facets list
+```
+
+You should see your facet listed with `[installed]` status.
+
+## What's next?
+
+- Learn about [core concepts](/concepts) — what facets contain and how they work
+- Set up the [MCP server](/mcp/overview) so your AI assistant can manage facets directly
+- Create your own facet — see [Authoring Facets](/authoring/manifest)

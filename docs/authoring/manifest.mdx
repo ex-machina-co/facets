@@ -1,0 +1,153 @@
+---
+title: "Manifest Reference"
+description: "Full schema reference for facet.yaml — the manifest that defines a facet."
+---
+
+Every facet is defined by a `facet.yaml` manifest file. This page documents every field in the schema.
+
+## Top-level fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | Yes | Unique facet name (min 1 character) |
+| `version` | `string` | Yes | Semantic version string (min 1 character) |
+| `description` | `string` | No | Short description of the facet |
+| `author` | `string` | No | Author name and optional email |
+| `requires` | `string \| string[]` | No | Shell commands to verify as prerequisites |
+| `skills` | `string[]` | No | List of skill names bundled in the facet |
+| `agents` | `Record<string, AgentDescriptor>` | No | Map of agent name to descriptor |
+| `commands` | `Record<string, CommandDescriptor>` | No | Map of command name to descriptor |
+| `platforms` | `Platforms` | No | Platform-specific configuration |
+
+The schema uses `.passthrough()` — unknown fields are preserved, not rejected.
+
+## AgentDescriptor
+
+Defines an agent that the facet provides.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `description` | `string` | No | What the agent does |
+| `prompt` | `Prompt` | Yes | The agent's prompt content (see [Prompt types](#prompt-types)) |
+| `platforms` | `object` | No | Platform-specific settings |
+| `platforms.opencode` | `object` | No | OpenCode-specific settings |
+| `platforms.opencode.tools` | `Record<string, boolean> \| string[]` | No | Tool permissions for the agent |
+
+### Tool permissions
+
+Tools can be specified as either:
+
+- **Record** — Explicitly enable/disable tools: `{ write: false, bash: true }`
+- **Array** — List of enabled tools: `["bash", "read"]`
+
+## CommandDescriptor
+
+Defines a slash command that the facet provides.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `description` | `string` | No | What the command does |
+| `prompt` | `Prompt` | Yes | The command's prompt content (see [Prompt types](#prompt-types)) |
+
+## Prompt types
+
+The `prompt` field accepts three forms:
+
+### String path
+
+A relative file path to the prompt file:
+
+```yaml
+prompt: prompts/my-agent.md
+```
+
+### File object
+
+Explicit file reference:
+
+```yaml
+prompt:
+  file: prompts/my-agent.md
+```
+
+### URL object
+
+Reference a prompt hosted at a URL:
+
+```yaml
+prompt:
+  url: https://example.com/prompts/my-agent.md
+```
+
+<Note>
+  URL prompts are fetched at cache time, not at install time. The fetched content is stored in the cache alongside other resources.
+</Note>
+
+## Platforms
+
+Platform-specific configuration. Currently supports OpenCode, but uses a catchall for extensibility.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `opencode` | `object` | No | OpenCode platform config |
+| `opencode.tools` | `string[]` | No | Tool file names (without extension) to install |
+| *(other)* | `Record<string, unknown>` | No | Config for other platforms (passthrough) |
+
+## Requires
+
+The `requires` field specifies shell commands that must succeed before the facet can be installed. These are prerequisite checks — typically version commands like `gh --version` or `jq --version`.
+
+Accepts a single string or an array:
+
+```yaml
+# Single prerequisite
+requires: gh --version
+
+# Multiple prerequisites
+requires:
+  - gh --version
+  - jq --version
+```
+
+## Complete example
+
+```yaml
+name: my-facet
+version: 1.0.0
+description: A comprehensive example facet
+author: Jane Doe <jane@example.com>
+
+requires:
+  - gh --version
+  - jq --version
+
+skills:
+  - my-skill
+
+agents:
+  my-agent:
+    description: Does a specific thing
+    prompt: prompts/my-agent.md
+    platforms:
+      opencode:
+        tools:
+          write: false
+
+commands:
+  my-command:
+    description: Runs a workflow
+    prompt:
+      file: prompts/my-command.md
+
+platforms:
+  opencode:
+    tools:
+      - my-tool
+```
+
+This facet bundles:
+- 1 skill (`my-skill`)
+- 1 agent (`my-agent`) with write access disabled
+- 1 command (`my-command`)
+- 1 tool (`my-tool`)
+- 2 prerequisites (`gh` and `jq`)

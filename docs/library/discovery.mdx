@@ -1,0 +1,124 @@
+---
+title: "Discovery"
+description: "List, cache, update, and clear facets."
+---
+
+The discovery subsystem handles finding facets (locally and in the cache), fetching remote facets, and managing the cache.
+
+## `listFacets(projectRoot)`
+
+Lists all facets declared by the project. **Read-only** — no network calls, no command execution.
+
+```ts
+import { listFacets } from '@ex-machina/facets'
+
+const result = await listFacets('/path/to/project')
+for (const facet of result.facets) {
+  console.log(facet.name, facet.version, facet.installed ? 'installed' : 'not installed')
+}
+```
+
+Performs a three-pass scan:
+1. Scans `.opencode/facets/*/facet.yaml` for local facets
+2. Iterates `facets.yaml` remote entries and loads from cache
+3. Picks up any `facets.yaml` local entries not already found
+
+**Returns:** `Promise<ListResult>`
+
+```ts
+interface ListResult {
+  facets: FacetEntry[]
+  errors?: string[]
+}
+
+interface FacetEntry {
+  name: string
+  version: string
+  description?: string
+  source: 'local' | 'remote'
+  installed: boolean
+  requires: string[]
+  resources: ResourceSummary[]
+}
+
+interface ResourceSummary {
+  type: 'skill' | 'agent' | 'command' | 'tool'
+  name: string
+}
+```
+
+## `cacheFacet(url, projectRoot)`
+
+Fetches a remote facet manifest and caches it locally. Also downloads all referenced resource files.
+
+```ts
+import { cacheFacet } from '@ex-machina/facets'
+
+const result = await cacheFacet('https://example.com/facets/viper/facet.yaml', projectRoot)
+if (result.success) {
+  console.log(`Cached: ${result.name} v${result.version}`)
+}
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `url` | `string` | URL to the remote `facet.yaml` |
+| `projectRoot` | `string` | Project root directory |
+
+**Returns:** `Promise<CacheResult>`
+
+```ts
+type CacheResult =
+  | { success: true; name: string; version: string }
+  | { success: false; error: string }
+```
+
+**Side effects:**
+- Writes files to `~/.cache/facets/<name>/`
+- Updates `facets.yaml` (adds remote entry)
+- Updates `facets.lock` (records version and integrity hash)
+
+## `updateFacet(name, projectRoot)`
+
+Re-fetches a cached remote facet and reports whether it was updated.
+
+```ts
+import { updateFacet } from '@ex-machina/facets'
+
+const result = await updateFacet('viper', projectRoot)
+if (result.success && result.updated) {
+  console.log(`Updated to v${result.version}`)
+}
+```
+
+**Returns:** `Promise<UpdateResult>`
+
+```ts
+type UpdateResult =
+  | { success: true; name: string; version: string; updated: boolean }
+  | { success: false; name: string; error: string }
+```
+
+## `updateAllFacets(projectRoot)`
+
+Updates all remote facets declared in `facets.yaml`. Calls `updateFacet` sequentially for each.
+
+```ts
+import { updateAllFacets } from '@ex-machina/facets'
+
+const results = await updateAllFacets(projectRoot)
+```
+
+**Returns:** `Promise<UpdateResult[]>`
+
+## `clearCache()`
+
+Deletes the entire global cache directory (`~/.cache/facets/`). Does not modify `facets.yaml`, `facets.lock`, or installed resources.
+
+```ts
+import { clearCache } from '@ex-machina/facets'
+
+await clearCache()
+```

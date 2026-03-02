@@ -1,0 +1,66 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "linden",
+  "name": "Facets",
+  "description": "A package manager for modular skills, agents, commands, and tools that extend AI coding assistants.",
+  "colors": {
+    "primary": "#6D28D9",
+    "light": "#A78BFA",
+    "dark": "#4C1D95"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "icon": "play",
+        "pages": ["index", "quickstart", "concepts"]
+      },
+      {
+        "group": "CLI Reference",
+        "icon": "terminal",
+        "pages": [
+          "cli/overview",
+          "cli/init",
+          "cli/list",
+          "cli/add",
+          "cli/install",
+          "cli/remove",
+          "cli/update",
+          "cli/cache-clear"
+        ]
+      },
+      {
+        "group": "Library API",
+        "icon": "code",
+        "pages": ["library/overview", "library/registry", "library/discovery", "library/installation"]
+      },
+      {
+        "group": "MCP Server",
+        "icon": "plug",
+        "pages": ["mcp/overview", "mcp/tools"]
+      },
+      {
+        "group": "Authoring Facets",
+        "icon": "pencil",
+        "pages": ["authoring/manifest", "authoring/project-config", "authoring/directory-layout"]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "type": "github",
+        "href": "https://github.com/ex-machina/facets"
+      }
+    ]
+  },
+  "contextual": {
+    "options": ["copy", "view", "claude", "chatgpt"]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/ex-machina/facets"
+    }
+  }
+}

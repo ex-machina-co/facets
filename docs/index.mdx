@@ -1,0 +1,44 @@
+---
+title: "Introduction"
+description: "A package manager for modular skills, agents, commands, and tools that extend AI coding assistants."
+---
+
+# What is Facets?
+
+Facets is a package manager and toolkit for **facets** — modular bundles of skills, agents, commands, and tools that extend AI coding assistants. Think of facets like plugins: each one adds new capabilities to your assistant, and Facets manages discovering, installing, and updating them.
+
+## Packages
+
+Facets is distributed as two packages:
+
+| Package | npm | Description |
+| --- | --- | --- |
+| **Facets CLI** | `@ex-machina/facets` | Core library and CLI for managing facets |
+| **MCP Server** | `@ex-machina/facets-mcp` | MCP server that exposes facet operations to AI assistants |
+
+The **CLI** is what you use directly to manage facets in your project. The **MCP server** lets your AI coding assistant manage facets on your behalf — adding, installing, and updating facets through natural language.
+
+## How it works
+
+1. **Add** a remote facet by URL — Facets fetches and caches the manifest and all its resources
+2. **Install** the facet — resources (skills, agents, commands, tools) are materialized into your project's `.opencode/` directory
+3. **Use** the facet — your AI assistant picks up the new capabilities automatically
+
+Facets tracks dependencies in a `facets.yaml` file and locks versions in a `facets.lock` file, similar to how `package.json` and lock files work in the Node.js ecosystem.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running in under a minute
+  </Card>
+  <Card title="Core Concepts" icon="lightbulb" href="/concepts">
+    Understand how facets, manifests, and installation work
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/cli/overview">
+    Full reference for every CLI command
+  </Card>
+  <Card title="MCP Server" icon="plug" href="/mcp/overview">
+    Let your AI assistant manage facets
+  </Card>
+</CardGroup>

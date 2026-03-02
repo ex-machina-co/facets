@@ -20,13 +20,15 @@
     "version-packages": "changeset version",
     "release": "bun run check && changeset publish --provenance",
     "link": "bun link --cwd packages/facets && bun link --cwd packages/facets-mcp",
-    "unlink": "bun unlink --cwd packages/facets && bun unlink --cwd packages/facets-mcp"
+    "unlink": "bun unlink --cwd packages/facets && bun unlink --cwd packages/facets-mcp",
+    "docs": "bun --cwd docs mint dev"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
     "@changesets/cli": "^2.29.0",
     "@fission-ai/openspec": "^1.2.0",
     "@types/bun": "latest",
+    "mint": "4.2.392",
     "turbo": "^2.5.0",
     "typescript": "^5"
   }

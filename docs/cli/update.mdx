@@ -1,0 +1,43 @@
+---
+title: "facets update"
+description: "Update cached remote facets."
+---
+
+## Usage
+
+```sh
+facets update [name]
+```
+
+## Arguments
+
+| Argument | Description |
+| --- | --- |
+| `name` | Name of a specific facet to update (optional) |
+
+If no name is provided, updates **all remote facets**.
+
+## What it does
+
+Re-fetches a cached remote facet from its URL and checks for new versions:
+
+1. **Re-fetch** — Downloads the manifest and all resources again (same process as `facets add`)
+2. **Compare** — Checks the new version against the version stored in `facets.lock`
+3. **Report** — Tells you whether the facet was updated or is already current
+
+## Example
+
+```sh
+# Update a specific facet
+facets update viper
+# Updated: viper → v1.3.0
+
+# Update all remote facets
+facets update
+# Updated: viper → v1.3.0
+# my-facet: already current
+```
+
+## After updating
+
+Updating refreshes the **cache** and **lock file**, but does not automatically reinstall. If a facet was previously installed, you'll need to run `facets install <name>` again to apply the new version's resources to your project.

@@ -1,0 +1,106 @@
+---
+title: "Core Concepts"
+description: "Understand how facets, manifests, and the installation lifecycle work."
+---
+
+## What is a facet?
+
+A **facet** is a self-contained bundle that adds capabilities to an AI coding assistant. Each facet can include any combination of:
+
+| Resource | Purpose | Installed to |
+| --- | --- | --- |
+| **Skills** | Domain-specific instructions and workflows | `.opencode/skills/<name>/SKILL.md` |
+| **Agents** | Specialized agent prompts with tool permissions | `.opencode/agents/<name>.md` |
+| **Commands** | Custom slash commands | `.opencode/commands/<name>.md` |
+| **Tools** | TypeScript tool implementations | `.opencode/tools/<name>.ts` |
+
+## The manifest
+
+Every facet is defined by a `facet.yaml` manifest. This is the single source of truth for what a facet contains and how it should be installed.
+
+```yaml
+name: my-facet
+version: 1.0.0
+description: A helpful facet
+author: Jane Doe <jane@example.com>
+requires:
+  - gh --version
+skills:
+  - my-skill
+agents:
+  my-agent:
+    description: Does a thing
+    prompt: prompts/my-agent.md
+    platforms:
+      opencode:
+        tools:
+          write: false
+commands:
+  my-command:
+    description: What it does
+    prompt: prompts/my-command.md
+platforms:
+  opencode:
+    tools:
+      - my-tool
+```
+
+See [Manifest Reference](/authoring/manifest) for the full schema.
+
+## Local vs remote facets
+
+Facets can come from two sources:
+
+- **Remote** — Fetched from a URL and cached locally. Declared in `facets.yaml` under `remote:` with a URL and optional version pin.
+- **Local** — Stored directly in your project at `.facets/<name>/`. Declared in `facets.yaml` under `local:`. Useful for facets you're developing or that are project-specific.
+
+## The cache
+
+When you `facets add` a remote facet, it's cached to `~/.cache/facets/<name>/`. The cache stores the manifest and all referenced resource files. This means subsequent installs don't need network access.
+
+The cache is global across all projects. Use `facets cache clear` to wipe it.
+
+## Project registry
+
+Your project tracks facet dependencies in two files inside `.opencode/`:
+
+### `facets.yaml`
+
+The dependency declaration file. Lists which facets your project uses:
+
+```yaml
+remote:
+  viper:
+    url: https://example.com/facets/viper/facet.yaml
+    version: 1.2.0
+local:
+  - ./local-facets/my-custom-facet
+```
+
+### `facets.lock`
+
+The lock file. Records the exact version and integrity hash (SHA-256) of each remote facet:
+
+```yaml
+remote:
+  viper:
+    url: https://example.com/facets/viper/facet.yaml
+    version: 1.2.0
+    integrity: sha256-abc123def456...
+```
+
+The integrity hash is computed over the raw manifest content to detect tampering or drift.
+
+## Installation lifecycle
+
+When you run `facets install`, this is what happens:
+
+1. **Resolve** — Find the facet directory (local `.facets/<name>/` first, then cache `~/.cache/facets/<name>/`)
+2. **Load** — Read and validate `facet.yaml`
+3. **Prereq check** — If the manifest declares `requires`, prompt for approval and run each command (e.g. `gh --version`). Results are cached so you're only asked once.
+4. **Copy resources** — Materialize files into `.opencode/`:
+   - Skills are copied verbatim
+   - Agents and commands get YAML frontmatter assembled from the manifest descriptor
+   - Tools are copied verbatim
+
+See [Directory Layout](/authoring/directory-layout) for details on the source and installed file structures.

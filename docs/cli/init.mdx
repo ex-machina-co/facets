@@ -1,0 +1,46 @@
+---
+title: "facets init"
+description: "Set up a project for facets."
+---
+
+## Usage
+
+```sh
+facets init
+```
+
+## What it does
+
+Initializes your project for Facets by creating two files:
+
+### 1. `.opencode/opencode.jsonc`
+
+Registers the Facets MCP server so your AI assistant can manage facets. If the file already exists, it adds the `facets` entry to the `mcp` section while preserving existing content and comments.
+
+The generated MCP server entry looks like:
+
+```jsonc
+{
+  "mcp": {
+    "facets": {
+      "type": "local",
+      "command": ["bunx", "facets-mcp"],
+      "enabled": true
+    }
+  }
+}
+```
+
+### 2. `.opencode/facets.yaml`
+
+Creates the facet dependency file if it doesn't already exist:
+
+```yaml
+# Facet dependencies for this project
+local: []
+remote: {}
+```
+
+## Idempotency
+
+Running `facets init` on an already-configured project is safe. If the MCP server is already registered, it prints "Project already configured for facets." and exits without modifying anything.
