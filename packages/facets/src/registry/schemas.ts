@@ -1,98 +1,92 @@
-import { z } from 'zod/v4'
+import { type } from 'arktype'
 
-// --- Prompt field: string (file path) or object with file/url ---
-
-const PromptSchema = z.union([z.string(), z.object({ file: z.string() }), z.object({ url: z.string().url() })])
+const Prompt = type('string').or({ file: 'string' }).or({ url: 'string.url' })
+type Prompt = typeof Prompt.infer
 
 // --- Agent descriptor ---
 
-const AgentPlatformOpencode = z
-  .object({
-    tools: z.union([z.record(z.string(), z.boolean()), z.array(z.string())]).optional(),
-  })
-  .passthrough()
+const AgentPlatformOpencode = type({
+  '+': 'ignore',
+  'tools?': type({ '[string]': 'boolean' }).or('string[]'),
+})
 
-const AgentPlatformGeneric = z.record(z.string(), z.unknown())
+const AgentPlatformGeneric = type({ '[string]': 'unknown' })
 
-const AgentDescriptorSchema = z.object({
-  description: z.string().optional(),
-  prompt: PromptSchema,
-  platforms: z
-    .object({
-      opencode: AgentPlatformOpencode.optional(),
-    })
-    .catchall(AgentPlatformGeneric)
-    .optional(),
+const AgentDescriptor = type({
+  'description?': 'string',
+  prompt: Prompt,
+  'platforms?': type({
+    '+': 'ignore',
+    'opencode?': AgentPlatformOpencode,
+    '[string]': AgentPlatformGeneric,
+  }),
 })
 
 // --- Command descriptor ---
 
-const CommandDescriptorSchema = z.object({
-  description: z.string().optional(),
-  prompt: PromptSchema,
+const CommandDescriptor = type({
+  'description?': 'string',
+  prompt: Prompt,
 })
 
 // --- Platform section ---
 
-const PlatformOpencodeSchema = z.object({
-  tools: z.array(z.string()).optional(),
+const PlatformOpencode = type({
+  'tools?': 'string[]',
 })
 
-const PlatformsSchema = z
-  .object({
-    opencode: PlatformOpencodeSchema.optional(),
-  })
-  .catchall(z.record(z.string(), z.unknown()))
+const Platforms = type({
+  '+': 'ignore',
+  'opencode?': PlatformOpencode,
+  '[string]': type({ '[string]': 'unknown' }),
+})
 
-// --- Requires: string or array of strings ---
-
-const RequiresSchema = z.union([z.string(), z.array(z.string())])
+const Requires = type('string').or('string[]')
 
 // --- FacetManifest (facet.yaml) ---
 
-export const FacetManifestSchema = z
-  .object({
-    name: z.string().min(1),
-    version: z.string().min(1),
-    description: z.string().optional(),
-    author: z.string().optional(),
-    requires: RequiresSchema.optional(),
-    skills: z.array(z.string()).optional(),
-    agents: z.record(z.string(), AgentDescriptorSchema).optional(),
-    commands: z.record(z.string(), CommandDescriptorSchema).optional(),
-    platforms: PlatformsSchema.optional(),
-  })
-  .passthrough()
+export const FacetManifest = type({
+  '+': 'ignore',
+  name: 'string >= 1',
+  version: 'string >= 1',
+  'description?': 'string',
+  'author?': 'string',
+  'requires?': Requires,
+  'skills?': 'string[]',
+  'agents?': type({ '[string]': AgentDescriptor }),
+  'commands?': type({ '[string]': CommandDescriptor }),
+  'platforms?': Platforms,
+})
 
-export type FacetManifest = z.infer<typeof FacetManifestSchema>
+export type FacetManifest = typeof FacetManifest.infer
 
 // --- FacetsYaml (facets.yaml — project dependency file) ---
 
-const RemoteEntrySchema = z.object({
-  url: z.string().url(),
-  version: z.string().optional(),
+const RemoteEntry = type({
+  url: 'string.url',
+  'version?': 'string',
 })
 
-export const FacetsYamlSchema = z.object({
-  remote: z.record(z.string(), RemoteEntrySchema).optional(),
-  local: z.array(z.string()).optional(),
+export const FacetsYaml = type({
+  'remote?': type({ '[string]': RemoteEntry }),
+  'local?': 'string[]',
 })
 
-export type FacetsYaml = z.infer<typeof FacetsYamlSchema>
+export type FacetsYaml = typeof FacetsYaml.infer
 
 // --- FacetsLock (facets.lock — lockfile) ---
 
-const LockEntrySchema = z.object({
-  url: z.string().url(),
-  version: z.string(),
-  integrity: z.string(),
+const LockEntry = type({
+  url: 'string.url',
+  version: 'string',
+  integrity: 'string',
 })
 
-export const FacetsLockSchema = z.object({
-  remote: z.record(z.string(), LockEntrySchema).optional(),
+export const FacetsLock = type({
+  'remote?': type({ '[string]': LockEntry }),
 })
 
-export type FacetsLock = z.infer<typeof FacetsLockSchema>
+export type FacetsLock = typeof FacetsLock.infer
 
 // --- Helpers ---
 
@@ -104,7 +98,7 @@ export function normalizeRequires(requires: string | string[] | undefined): stri
 }
 
 /** Resolve a prompt field to a file path relative to the facet directory */
-export function resolvePromptPath(prompt: z.infer<typeof PromptSchema>): string | null {
+export function resolvePromptPath(prompt: Prompt): string | null {
   if (typeof prompt === 'string') return prompt
   if ('file' in prompt) return prompt.file
   // URL prompts are not resolved to local paths

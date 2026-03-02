@@ -1,5 +1,6 @@
+import { type } from 'arktype'
 import yaml from 'js-yaml'
-import { type FacetsLock, FacetsLockSchema, type FacetsYaml, FacetsYamlSchema } from './schemas.ts'
+import { FacetsLock, FacetsYaml } from './schemas.ts'
 
 /**
  * Platform-specific paths for facets config files.
@@ -24,9 +25,9 @@ export async function readFacetsYaml(projectRoot: string): Promise<FacetsYaml> {
   try {
     const raw = await Bun.file(filePath).text()
     const parsed = yaml.load(raw)
-    const result = FacetsYamlSchema.safeParse(parsed)
-    if (result.success) return result.data
-    return { remote: {}, local: [] }
+    const result = FacetsYaml(parsed)
+    if (result instanceof type.errors) return { remote: {}, local: [] }
+    return result
   } catch {
     return { remote: {}, local: [] }
   }
@@ -45,9 +46,9 @@ export async function readFacetsLock(projectRoot: string): Promise<FacetsLock> {
   try {
     const raw = await Bun.file(filePath).text()
     const parsed = yaml.load(raw)
-    const result = FacetsLockSchema.safeParse(parsed)
-    if (result.success) return result.data
-    return { remote: {} }
+    const result = FacetsLock(parsed)
+    if (result instanceof type.errors) return { remote: {} }
+    return result
   } catch {
     return { remote: {} }
   }

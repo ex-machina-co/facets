@@ -1,23 +1,18 @@
 import { describe, expect, test } from 'bun:test'
-import {
-  FacetManifestSchema,
-  FacetsLockSchema,
-  FacetsYamlSchema,
-  normalizeRequires,
-  resolvePromptPath,
-} from '../schemas.ts'
+import { type } from 'arktype'
+import { FacetManifest, FacetsLock, FacetsYaml, normalizeRequires, resolvePromptPath } from '../schemas.ts'
 
-describe('FacetManifestSchema', () => {
+describe('FacetManifest', () => {
   test('accepts valid minimal manifest', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'my-facet',
       version: '1.0.0',
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts full manifest with all fields', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'my-facet',
       version: '1.0.0',
       description: 'A test facet',
@@ -45,82 +40,82 @@ describe('FacetManifestSchema', () => {
         },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('rejects manifest without name', () => {
-    const result = FacetManifestSchema.safeParse({ version: '1.0.0' })
-    expect(result.success).toBe(false)
+    const result = FacetManifest({ version: '1.0.0' })
+    expect(result).toBeInstanceOf(type.errors)
   })
 
   test('rejects manifest without version', () => {
-    const result = FacetManifestSchema.safeParse({ name: 'test' })
-    expect(result.success).toBe(false)
+    const result = FacetManifest({ name: 'test' })
+    expect(result).toBeInstanceOf(type.errors)
   })
 
   test('tolerates unrecognized fields', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'my-facet',
       version: '1.0.0',
       unknownField: 'value',
       anotherField: 42,
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts requires as string', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'my-facet',
       version: '1.0.0',
       requires: 'gh --version',
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts requires as array', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'my-facet',
       version: '1.0.0',
       requires: ['gh --version', 'jq --version'],
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts prompt as string', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'test',
       version: '1.0.0',
       agents: {
         agent1: { prompt: 'prompts/agent1.md' },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts prompt as object with file', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'test',
       version: '1.0.0',
       agents: {
         agent1: { prompt: { file: 'prompts/agent1.md' } },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts prompt as object with url', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'test',
       version: '1.0.0',
       agents: {
         agent1: { prompt: { url: 'https://example.com/prompt' } },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts agent with array-style tools', () => {
-    const result = FacetManifestSchema.safeParse({
+    const result = FacetManifest({
       name: 'test',
       version: '1.0.0',
       agents: {
@@ -132,13 +127,13 @@ describe('FacetManifestSchema', () => {
         },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 })
 
-describe('FacetsYamlSchema', () => {
+describe('FacetsYaml', () => {
   test('accepts valid dependency file', () => {
-    const result = FacetsYamlSchema.safeParse({
+    const result = FacetsYaml({
       local: ['my-local-facet'],
       remote: {
         viper: {
@@ -147,25 +142,25 @@ describe('FacetsYamlSchema', () => {
         },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts empty dependency file', () => {
-    const result = FacetsYamlSchema.safeParse({})
-    expect(result.success).toBe(true)
+    const result = FacetsYaml({})
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts local-only dependencies', () => {
-    const result = FacetsYamlSchema.safeParse({
+    const result = FacetsYaml({
       local: ['one', 'two'],
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 })
 
-describe('FacetsLockSchema', () => {
+describe('FacetsLock', () => {
   test('accepts valid lockfile', () => {
-    const result = FacetsLockSchema.safeParse({
+    const result = FacetsLock({
       remote: {
         viper: {
           url: 'https://example.com/facets/viper/facet.yaml',
@@ -174,12 +169,12 @@ describe('FacetsLockSchema', () => {
         },
       },
     })
-    expect(result.success).toBe(true)
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 
   test('accepts empty lockfile', () => {
-    const result = FacetsLockSchema.safeParse({})
-    expect(result.success).toBe(true)
+    const result = FacetsLock({})
+    expect(result).not.toBeInstanceOf(type.errors)
   })
 })
 
