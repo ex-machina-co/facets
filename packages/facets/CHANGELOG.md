@@ -1,5 +1,11 @@
 # @ex-machina/facets
 
+## 0.2.2
+
+### Patch Changes
+
+- 124d984: Provenance changes
+
 ## 0.2.1
 
 ### Patch Changes

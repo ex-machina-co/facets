@@ -1,5 +1,13 @@
 # @ex-machina/facets-mcp
 
+## 0.1.3
+
+### Patch Changes
+
+- 124d984: Provenance changes
+- Updated dependencies [124d984]
+  - @ex-machina/facets@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes
