@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { type } from 'arktype'
 import yaml from 'js-yaml'
 import { readFacetsLock, readFacetsYaml, writeFacetsLock, writeFacetsYaml } from '../registry/files.ts'
 import { type FacetManifest, resolvePromptPath } from '../registry/schemas.ts'
@@ -112,14 +113,13 @@ export async function cacheFacet(url: string, projectRoot: string): Promise<Cach
     return { success: false, error: `Invalid YAML at ${url}: ${err}` }
   }
 
-  const { FacetManifestSchema } = await import('../registry/schemas.ts')
-  const validation = FacetManifestSchema.safeParse(parsed)
-  if (!validation.success) {
-    const issues = validation.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-    return { success: false, error: `Invalid manifest: ${issues}` }
+  const { FacetManifest } = await import('../registry/schemas.ts')
+  const validation = FacetManifest(parsed)
+  if (validation instanceof type.errors) {
+    return { success: false, error: `Invalid manifest: ${validation.summary}` }
   }
 
-  const manifest = validation.data
+  const manifest = validation
   const cacheDir = getCacheDir(manifest.name)
 
   // Write the manifest

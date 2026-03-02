@@ -17,10 +17,7 @@ export { type UninstallResult, uninstallFacet } from './installation/uninstall.t
 export { readFacetsLock, readFacetsYaml, writeFacetsLock, writeFacetsYaml } from './registry/files.ts'
 export { loadManifest } from './registry/loader.ts'
 export {
-  type FacetManifest,
-  FacetManifestSchema,
-  type FacetsLock,
-  FacetsLockSchema,
-  type FacetsYaml,
-  FacetsYamlSchema,
+  FacetManifest,
+  FacetsLock,
+  FacetsYaml,
 } from './registry/schemas.ts'

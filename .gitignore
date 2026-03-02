@@ -1,4 +1,7 @@
-node_modules/
-dist/
 .turbo/
+.strategy/
+
+dist/
 docs/.mintlify/
+node_modules/
+

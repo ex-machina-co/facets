@@ -1,5 +1,6 @@
+import { type } from 'arktype'
 import yaml from 'js-yaml'
-import { type FacetManifest, FacetManifestSchema } from './schemas.ts'
+import { FacetManifest } from './schemas.ts'
 
 export interface LoadManifestSuccess {
   success: true
@@ -32,11 +33,10 @@ export async function loadManifest(manifestPath: string): Promise<LoadManifestRe
     return { success: false, error: `Invalid YAML in manifest: ${err}` }
   }
 
-  const result = FacetManifestSchema.safeParse(parsed)
-  if (!result.success) {
-    const issues = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-    return { success: false, error: `Invalid manifest: ${issues}` }
+  const result = FacetManifest(parsed)
+  if (result instanceof type.errors) {
+    return { success: false, error: `Invalid manifest: ${result.summary}` }
   }
 
-  return { success: true, manifest: result.data }
+  return { success: true, manifest: result }
 }
