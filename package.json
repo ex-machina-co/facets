@@ -18,7 +18,7 @@
     "build": "bun turbo build",
     "change": "changeset",
     "version-packages": "changeset version",
-    "release": "bun run check && changeset publish --provenance",
+    "release": "bun run check && changeset publish",
     "link": "bun link --cwd packages/facets && bun link --cwd packages/facets-mcp",
     "unlink": "bun unlink --cwd packages/facets && bun unlink --cwd packages/facets-mcp",
     "docs": "bun --cwd docs mint dev"

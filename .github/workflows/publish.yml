@@ -35,8 +35,7 @@ jobs:
       - name: Setup Node (for npm publish)
         uses: actions/setup-node@v6
         with:
-          node-version: 20
-          registry-url: "https://registry.npmjs.org"
+          node-version: 24
 
       - name: Install dependencies
         run: bun install
@@ -47,3 +46,4 @@ jobs:
           publish: bun run release
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          NPM_CONFIG_PROVENANCE: "true"
