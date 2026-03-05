@@ -133,7 +133,7 @@ It does NOT catch behavioral changes where the API surface is unchanged but the 
 
 | Location        | What's stored                                                                       |
 | --------------- | ----------------------------------------------------------------------------------- |
-| Registry        | Content hash for facets and source-mode servers. API surface hash for all servers.   |
+| Registry        | Content hash for facets and source-mode servers. API surface hash for source-mode servers. |
 | Lockfile        | Content hash or OCI digest + API surface hash for every installed server.            |
 | Facet manifest  | OCI image reference (tag or digest) for ref-mode servers.                           |
 
