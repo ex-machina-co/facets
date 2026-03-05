@@ -176,9 +176,9 @@ The CLI validates platform config against known platform schemas at build and pu
 
 3. **Text composition is exact-pinned.** The `facets` section pins exact versions (`"name@1.0.0"`) because composition is a copy operation resolved before publish. The composed text is frozen at that version in the bundle. This is safe because stale text is safe (SDR-003).
 
-4. **Server references are floor-constrained.** The `servers` section declares minimum versions. The CLI resolves to the latest at or above the floor at install time. This ensures MCP servers can be updated for security fixes without requiring the facet author to re-publish (SDR-003).
+4. **Server references use mode-appropriate constraints.** Source-mode servers declare floor versions — the CLI resolves to the latest at or above the floor at install time, ensuring servers can be updated for security fixes without requiring the facet author to re-publish (SDR-003). Ref-mode servers declare OCI image references — the CLI resolves tags to digests at install time, pinning the exact image in the lockfile.
 
-5. **The schema is forward-compatible.** The `servers` map values are strings today but can become objects in the future (e.g., selective server activation). The `facets` selective form uses component-type keys (`skills`, `agents`, `commands`) that can be extended if new component types are added. No structural change made today prevents future extensions.
+5. **The schema is forward-compatible.** Source-mode `servers` values are strings (floor version). Ref-mode values are objects (`image` field). Both forms can be extended in the future (e.g., selective server activation, additional metadata). The `facets` selective form uses component-type keys (`skills`, `agents`, `commands`) that can be extended if new component types are added. No structural change made today prevents future extensions.
 
 ### Constraints
 
