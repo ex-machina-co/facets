@@ -1,4 +1,0 @@
-[submodule "strategy"]
-	path = strategy
-	url = git@github.com:ex-machina-co/strategy.git
-	branch = main
