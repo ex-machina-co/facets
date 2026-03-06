@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "linden",
+  "theme": "mint",
   "name": "Agent Facets",
   "description": "A modular system to version and share skills, agents, commands, and MCP servers that extend AI coding assistants.",
   "colors": {
@@ -46,7 +46,7 @@
     "links": [
       {
         "type": "github",
-        "href": "https://github.com/ex-machina/facets"
+        "href": "https://github.com/ex-machina-co/facets"
       }
     ]
   },
@@ -55,7 +55,7 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/ex-machina/facets"
+      "github": "https://github.com/ex-machina-co/facets"
     }
   }
 }
