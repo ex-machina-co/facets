@@ -16,7 +16,7 @@ decision-makers: julian
 
 A facet is a distributable unit of AI assistant configuration. It contains text artifacts — skills, agents, and commands — that are consumed by an LLM. A facet may also reference MCP servers, which are a separate artifact type containing executable code.
 
-The manifest (`facet.yaml`) is the source of truth for what a facet contains, what other facets it draws from, and which MCP servers it needs. The current manifest schema supports basic components but lacks:
+The manifest (`facet.yaml`) is the source of truth for what a facet contains, what other facets it draws from, and which MCP servers it needs. The manifest schema must support:
 
 - Text composition from other facets (reusing skills, agents, commands)
 - MCP server references (servers are a separate artifact type, not part of the facet)
