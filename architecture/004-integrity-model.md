@@ -45,7 +45,7 @@ Each concern operates at a different point in the lifecycle and serves a differe
 **When it's applied:**
 - **Publish time**: Registry computes the hash after assembling the artifact (ADR-002).
 - **Install time**: CLI verifies the downloaded artifact against the registry's hash.
-- **Lockfile**: The integrity hash is recorded in the lockfile for reproducible verification.
+- **Lockfile**: The content hash is recorded in the lockfile for reproducible verification.
 
 **Format:** `sha256:<hex-encoded hash>` (e.g., `sha256:a1b2c3d4...`).
 
@@ -85,7 +85,7 @@ If the author specifies a digest directly (`image: "ghcr.io/acme/slack-bot@sha25
 
 **What it guarantees:** Once installed, the consumer always gets the same container image regardless of whether the tag was moved. The digest in the lockfile is the truth.
 
-**Note:** OCI images do not have semver versions — they have tags and digests. Tags that look like versions (`:v1.5.0`) are just labels. The facets system does not interpret or constrain OCI tag naming. Floor-only version constraints (used for source-mode servers) do not apply to ref-mode servers. Ref-mode servers are pinned by tag + resolved digest.
+**Note:** OCI images do not have semver versions — they have tags and digests. Tags that look like versions (`:v1.5.0`) are just labels. The facets system does not interpret or constrain OCI tag naming. Floor constraints (used for source-mode servers) do not apply to ref-mode servers. Ref-mode servers are pinned by tag + resolved digest.
 
 #### 3. API surface hashing
 
@@ -98,7 +98,7 @@ If the author specifies a digest directly (`image: "ghcr.io/acme/slack-bot@sha25
 - Parameter descriptions
 - Required vs. optional parameter status
 
-These elements are serialized into a canonical form (sorted keys, deterministic JSON, no whitespace variation) and hashed with SHA-256. The hash captures the structural shape of the API including the text that guides how an LLM uses it.
+These elements are serialized into a deterministic canonical form and hashed with SHA-256. The hash captures the structural shape of the API including the text that guides how an LLM uses it. The exact canonical serialization format is an implementation concern — the requirement is that two identical API surfaces always produce the same hash.
 
 **Why descriptions are included:** Descriptions are consumed by the LLM to decide when and how to use a tool. A description change could alter AI behavior even if parameters are unchanged. Including descriptions in the hash ensures consumers are notified of any change that could affect how their AI assistant interacts with the server.
 
@@ -177,5 +177,5 @@ It does NOT catch behavioral changes where the API surface is unchanged but the 
 * **Facets ADR-002**: Publish flow — content hashes are computed at publish time by the registry
 * **Facets ADR-003**: Install & resolve flow — hashes verified at install, API surface hashes compared at upgrade
 * **Facets ADR-005**: MCP server artifact — defines the server artifact type and its publish flow
-* **Facets SDR-002**: Tool execution model — source and ref modes with integrity guarantees
+* **Facets SDR-002**: Tool execution model — source-mode and ref-mode with integrity guarantees
 * **Facets SDR-003**: Dual distribution model — API surface hashing as the safety net for version constraints

@@ -14,7 +14,7 @@ decision-makers: julian
 
 ## Context and Problem Statement
 
-A facet is a distributable unit of AI assistant configuration. It contains text components — skills, agents, and commands — that are consumed by an LLM. A facet may also reference MCP servers, which are a separate artifact type containing executable code.
+A facet is a distributable unit of AI assistant configuration. It contains text artifacts — skills, agents, and commands — that are consumed by an LLM. A facet may also reference MCP servers, which are a separate artifact type containing executable code.
 
 The manifest (`facet.yaml`) is the source of truth for what a facet contains, what other facets it draws from, and which MCP servers it needs. The current manifest schema supports basic components but lacks:
 
@@ -28,7 +28,7 @@ This ADR defines the manifest schema at the spec level — what fields exist, wh
 
 * Facets are text. MCP servers are code. These are separate artifact types with different distribution models (Facets SDR-003).
 * Text composition must be resolved before the artifact reaches the registry — pull components from other facets, bundle them into the artifact (Facets SDR-003).
-* Source-mode MCP server references must use floor-only version constraints, resolved at install time. Ref-mode servers are OCI image references resolved to digests at install time (Facets SDR-003, ADR-005).
+* Source-mode MCP server references must use floor constraints, resolved at install time. Ref-mode servers are OCI image references resolved to digests at install time (Facets SDR-003, Facets ADR-005).
 * The manifest must be immutable — the build and publish process does not modify it.
 * Platform-agnostic by default, with platform-specific extensions for agent configuration (Facets SDR-001).
 * The schema must be forward-compatible — structural choices should not prevent future extensions (selective server activation, server composition, etc.).
@@ -85,7 +85,7 @@ servers:
 | `description` | No       | Human-readable description.   |
 | `author`      | No       | Author name or identifier.    |
 
-**Text components** — locally authored content included in the facet:
+**Text artifacts** — locally authored content included in the facet:
 
 | Field      | Required | Description                                                                  |
 | ---------- | -------- | ---------------------------------------------------------------------------- |
@@ -95,7 +95,7 @@ servers:
 
 **`facets`** — text composed from other facets. Each entry is either a compact string or a selective object.
 
-Compact form (take all text components from the referenced facet):
+Compact form (take all text artifacts from the referenced facet):
 ```yaml
 facets:
   - "code-review-base@1.0.0"
@@ -143,7 +143,7 @@ servers:
 | server name | string     | Source-mode: floor version — minimum acceptable version (e.g., `"1.0.0"`).     |
 | server name | object     | Ref-mode: `image` field with an OCI image reference (tag or digest).           |
 
-**Source-mode resolution:** Server versions are resolved at install time to the latest version at or above the floor. The lockfile pins the exact resolved version and integrity hash.
+**Source-mode resolution:** Server versions are resolved at install time to the latest version at or above the floor. The lockfile pins the exact resolved version and content hash.
 
 **Ref-mode resolution:** At install time, if the image reference uses a tag (`:v2`), the CLI resolves it to a digest and pins the digest in the lockfile. If the reference is already a digest (`@sha256:abc123`), it is used as-is. Tags follow standard OCI convention — `:` for tags, `@` for digests.
 
@@ -182,7 +182,7 @@ The CLI validates platform config against known platform schemas at build and pu
 
 ### Constraints
 
-1. A facet must have at least one text component — either locally authored or composed from other facets.
+1. A facet must have at least one text artifact — either locally authored or composed from other facets.
 2. `facets` entries with the selective form must include at least one component type (`skills`, `agents`, or `commands`).
 3. Composed component names must not collide with locally-authored component names. Collisions are detected at build time and are an error.
 4. The `facets` compact form uses `@` as the version separator: `"name@version"`. Scoped names use the `@scope/name@version` pattern.
@@ -210,7 +210,7 @@ The CLI validates platform config against known platform schemas at build and pu
 ## More Information
 
 * **Facets SDR-001**: Platform-agnostic positioning — agents use `platforms` for cross-platform support
-* **Facets SDR-002**: Tool execution model — defines source and ref modes for MCP servers
+* **Facets SDR-002**: Tool execution model — defines source-mode and ref-mode for MCP servers
 * **Facets SDR-003**: Dual distribution model — bundle text at publish time, version MCP servers separately
 * **Facets ADR-002**: Publish flow — how `facets` composition is resolved and the bundle is created
 * **Facets ADR-003**: Install & resolve flow — how `servers` references are resolved at install time

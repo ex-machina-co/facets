@@ -99,13 +99,13 @@ There is no facets-registry artifact for ref-mode servers. There is no semver ve
 
 The facets CLI guarantees the following when running an MCP server:
 
-**Source mode:**
+**Source-mode:**
 1. The CLI downloads the server artifact from the facets registry.
 2. The CLI starts the server using the declared managed runtime (`bun` day-one) with the declared entry point.
 3. The server communicates via MCP over stdio.
 4. The CLI manages the server process lifecycle — start, stop, restart.
 
-**Ref mode:**
+**Ref-mode:**
 1. The CLI pulls the container image by the pinned digest (from the lockfile).
 2. The CLI starts the container using a container runtime (Docker/Podman).
 3. The server communicates via MCP over stdio (container stdin/stdout) or HTTP (mapped port).
@@ -160,5 +160,5 @@ Runtimes are enumerated, not discovered. Day-one: `bun` (TypeScript/JavaScript).
 * **Facets ADR-002**: Publish flow — facet publishing (separate from server publishing)
 * **Facets ADR-003**: Install & resolve flow — how server references are resolved at install time
 * **Facets ADR-004**: Integrity model — content hashing for source-mode, OCI digest pinning for ref-mode, API surface hashing for both
-* **Facets SDR-002**: Tool execution model — strategic decision for source and ref modes
+* **Facets SDR-002**: Tool execution model — strategic decision for source-mode and ref-mode
 * **Facets SDR-003**: Dual distribution model — servers are versioned separately from text

@@ -46,7 +46,7 @@ The publish flow has two phases: **build** (local, for testing) and **publish** 
 
 2. **Resolve text composition.** For each entry in the `facets` section:
    - Fetch the referenced facet at the exact pinned version from the registry (or local cache).
-   - For compact entries (`"name@version"`): extract all text components and their files.
+   - For compact entries (`"name@version"`): extract all text artifacts and their files.
    - For selective entries: extract only the named components and their files.
    - Detect naming collisions between composed components and locally-authored components. Collisions are a build error.
 
