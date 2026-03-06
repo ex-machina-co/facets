@@ -1,8 +1,8 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "linden",
-  "name": "Facets",
-  "description": "A package manager for modular skills, agents, commands, and tools that extend AI coding assistants.",
+  "name": "Agent Facets",
+  "description": "A modular system to version and share skills, agents, commands, and MCP servers that extend AI coding assistants.",
   "colors": {
     "primary": "#6D28D9",
     "light": "#A78BFA",
@@ -12,13 +12,11 @@
   "navigation": {
     "groups": [
       {
-        "group": "Getting Started",
-        "icon": "play",
+        "group": "Agent Facets",
         "pages": ["index", "quickstart", "concepts"]
       },
       {
         "group": "CLI Reference",
-        "icon": "terminal",
         "pages": [
           "cli/overview",
           "cli/init",
@@ -32,18 +30,15 @@
       },
       {
         "group": "Library API",
-        "icon": "code",
         "pages": ["library/overview", "library/registry", "library/discovery", "library/installation"]
       },
       {
         "group": "MCP Server",
-        "icon": "plug",
         "pages": ["mcp/overview", "mcp/tools"]
       },
       {
         "group": "Authoring Facets",
-        "icon": "pencil",
-        "pages": ["authoring/manifest", "authoring/project-config", "authoring/directory-layout"]
+        "pages": ["authoring/manifest", "authoring/config", "authoring/directory-layout"]
       }
     ]
   },
