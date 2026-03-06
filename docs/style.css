@@ -13,17 +13,3 @@
  *           #table-of-contents-layout — inner TOC (w-[19rem], pl-10)
  *         #content-area         — main content (lg:pl-[23.7rem])
  */
-
-@media (min-width: 1024px) {
-  /* --- Content area: tighten left gap (sidebar is 16rem, keep ~1rem gutter) --- */
-  #content-area {
-    padding-left: 17.5rem !important;
-    max-width: 60rem;
-  }
-}
-
-/* --- Prose: tighten font size and line height for better readability --- */
-.mdx-content {
-  font-size: 0.9375rem; /* 15px instead of default 16px */
-  line-height: 1.7;
-}
