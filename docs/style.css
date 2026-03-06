@@ -14,30 +14,11 @@
  *         #content-area         — main content (lg:pl-[23.7rem])
  */
 
-/* --- Widen the outer layout container so all three columns have more room --- */
-#navbar > div.max-w-8xl,
-#content-container {
-  max-width: 100rem !important;
-}
-
-/* --- Sidebar: slim down to free space for content --- */
-#sidebar {
-  width: 16rem !important;
-}
-
 @media (min-width: 1024px) {
   /* --- Content area: tighten left gap (sidebar is 16rem, keep ~1rem gutter) --- */
   #content-area {
     padding-left: 17.5rem !important;
-  }
-
-  /* --- TOC: reduce the dead space between content and TOC --- */
-  #content-side-layout {
-    max-width: 22rem !important;
-  }
-
-  #table-of-contents-layout {
-    padding-left: 1.5rem !important;
+    max-width: 60rem;
   }
 }
 
