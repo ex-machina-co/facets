@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "almond",
   "name": "Agent Facets",
   "description": "A modular system to version and share skills, agents, commands, and MCP servers that extend AI coding assistants.",
   "colors": {

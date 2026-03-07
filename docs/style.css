@@ -1,15 +1,3 @@
-/*
- * Custom layout overrides for Facets docs.
- *
- * Goal: widen the main content area and improve text readability,
- * inspired by modelcontextprotocol.io's layout.
- *
- * Mintlify layout structure (mint/linden themes):
- *   div.max-w-8xl          — outer container (88rem cap)
- *     #sidebar             — fixed left nav (w-[18rem])
- *     #content-container
- *       div.flex            — holds content + TOC in flex-row-reverse
- *         #content-side-layout  — TOC wrapper (w-[28rem] outer)
- *           #table-of-contents-layout — inner TOC (w-[19rem], pl-10)
- *         #content-area         — main content (lg:pl-[23.7rem])
- */
+#content-area.max-w-xl {
+  max-width: 44rem;
+}
