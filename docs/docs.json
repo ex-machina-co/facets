@@ -2,48 +2,74 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "almond",
   "name": "Agent Facets",
-  "description": "A modular system to version and share skills, agents, commands, and MCP servers that extend AI coding assistants.",
+  "description": "A package manager for AI assistant extensions — skills, agents, commands, and MCP servers.",
+  "logo": {
+    "dark": "/assets/logo.svg",
+    "light": "/assets/logo-light.svg"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "styling": {
+    "codeblocks": {
+      "theme": "dracula"
+    }
+  },
+  "fonts": {
+    "family": "Arimo Sans, sans-serif"
+  },
+  "icons": {
+    "library": "lucide"
+  },
   "colors": {
     "primary": "#6D28D9",
     "light": "#A78BFA",
     "dark": "#4C1D95"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/assets/favicon.ico",
   "navigation": {
     "groups": [
       {
         "group": "Agent Facets",
-        "pages": ["index", "quickstart", "concepts"]
+        "pages": ["index", "cli", "learn/index"]
       },
       {
-        "group": "CLI Reference",
+        "group": "Learn",
+        "pages": ["learn/skills", "learn/commands", "learn/agents", "learn/servers"]
+      },
+      {
+        "group": "CLI",
+        "pages": ["cli/add", "cli/build", "cli/info", "cli/install", "cli/publish", "cli/remove", "cli/update"]
+      },
+      {
+        "group": "Specification",
         "pages": [
-          "cli/overview",
-          "cli/init",
-          "cli/list",
-          "cli/add",
-          "cli/install",
-          "cli/remove",
-          "cli/update",
-          "cli/cache-clear"
+          "specification/index",
+          "specification/terminology",
+          "specification/architecture",
+          "specification/manifest",
+          "specification/publish",
+          "specification/install",
+          "specification/integrity",
+          "specification/servers"
         ]
-      },
-      {
-        "group": "Library API",
-        "pages": ["library/overview", "library/registry", "library/discovery", "library/installation"]
-      },
-      {
-        "group": "MCP Server",
-        "pages": ["mcp/overview", "mcp/tools"]
-      },
-      {
-        "group": "Authoring Facets",
-        "pages": ["authoring/manifest", "authoring/config", "authoring/directory-layout"]
       }
     ]
   },
   "navbar": {
     "links": [
+      {
+        "type": "button",
+        "icon": "layers",
+        "label": "Search Facets",
+        "href": "https://facet.cafe/"
+      },
+      {
+        "type": "button",
+        "icon": "download",
+        "label": "Install",
+        "href": "https://facet.cafe/install"
+      },
       {
         "type": "github",
         "href": "https://github.com/ex-machina-co/facets"
