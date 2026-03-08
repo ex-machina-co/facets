@@ -1,0 +1,236 @@
+---
+title: "Manifest Schema"
+description: "The facet.yaml format — fields, types, and constraints."
+---
+
+The facet manifest (`facet.yaml`) is the source of truth for what a facet contains, what other facets it composes text from, and which MCP servers it references. This page defines every field in the manifest schema.
+
+## Test
+
+```typescript
+export async function initProject(projectRoot: string): Promise<void> {
+  const configPath = `${projectRoot}/${OPENCODE_CONFIG_PATH}`
+
+  // Ensure .opencode/ directory exists
+  await Bun.$`mkdir -p ${projectRoot}/.opencode`
+
+  // Read or create opencode.jsonc
+  let config: Record<string, unknown>
+  let configText: string
+
+  try {
+    configText = await Bun.file(configPath).text()
+    config = parse(configText) as Record<string, unknown>
+  } catch {
+    // Config doesn't exist — create a new one
+    config = {}
+    configText = '{}'
+  }
+
+  // Check if MCP server is already registered
+  const mcp = (config.mcp ?? {}) as Record<string, unknown>
+  if (mcp.facets) {
+    console.log('Project already configured for facets.')
+    return
+  }
+
+  // Register the facets MCP server
+  mcp.facets = MCP_SERVER_CONFIG
+  config.mcp = mcp
+
+  // Write back preserving comments
+  const newConfig = stringify(config, null, 2)
+  await Bun.write(configPath, `${newConfig}\n`)
+  console.log(`Registered facets MCP server in ${OPENCODE_CONFIG_PATH}`)
+
+  // Create facets.yaml if absent
+  const yamlPath = facetsYamlPath(projectRoot)
+  if (!(await Bun.file(yamlPath).exists())) {
+    await Bun.write(yamlPath, '# Facet dependencies for this project\nlocal: []\nremote: {}\n')
+    console.log('Created facets.yaml')
+  }
+}
+```
+
+## Example
+
+```yaml
+name: acme-dev
+version: 1.0.0
+description: "Acme org developer toolkit"
+author: acme-org
+
+skills: [code-standards, pr-template]
+
+agents:
+  reviewer:
+    description: "Org code reviewer"
+    prompt: { file: agents/reviewer.md }
+    platforms:
+      opencode:
+        tools: { grep: true, bash: true }
+
+commands:
+  review:
+    description: "Run a code review"
+    prompt: { file: commands/review.md }
+
+facets:
+  - "code-review-base@1.0.0"
+  - name: typescript-patterns
+    version: "2.1.0"
+    skills: [ts-conventions, any-usage]
+
+servers:
+  jira: "1.0.0"
+  github: "2.3.0"
+  "@acme/deploy": "0.5.0"
+  slack:
+    image: "ghcr.io/acme/slack-bot:v2"
+```
+
+## Identity
+
+| Field         | Required | Type   | Description                   |
+| ------------- | -------- | ------ | ----------------------------- |
+| `name`        | Yes      | string | Facet name. MUST be non-empty.|
+| `version`     | Yes      | string | Semver version string.        |
+| `description` | No       | string | Human-readable description.   |
+| `author`      | No       | string | Author name or identifier.    |
+
+The `name` and `version` fields MUST be present. A manifest missing either field MUST be rejected.
+
+Consumers MUST tolerate unrecognized top-level fields. Unknown fields MUST be ignored — not rejected.
+
+## Text Assets
+
+Text assets are the locally authored content included in the facet.
+
+| Field      | Required | Type                              | Description                                                                  |
+| ---------- | -------- | --------------------------------- | ---------------------------------------------------------------------------- |
+| `skills`   | No       | array of strings                  | Skill names. Each corresponds to a file in the facet.                        |
+| `agents`   | No       | map of string → agent descriptor  | Agent name → agent descriptor (description, prompt, platform config).        |
+| `commands` | No       | map of string → command descriptor| Command name → command descriptor (description, prompt).                     |
+
+A facet MUST have at least one text asset — either locally authored or composed from other facets via the `facets` section. A manifest with no text assets MUST be rejected.
+
+### Agent Descriptor
+
+| Field         | Required | Type                          | Description                                                            |
+| ------------- | -------- | ----------------------------- | ---------------------------------------------------------------------- |
+| `description` | No       | string                        | Human-readable description of the agent.                               |
+| `prompt`      | Yes      | string, `{file: path}`, or `{url: url}` | The agent's prompt content or a reference to it.              |
+| `platforms`   | No       | map of string → platform config| Platform name → platform-specific agent configuration.                |
+
+The `prompt` field MUST be present. It MAY be:
+- A string containing the prompt text directly
+- An object with a `file` key containing a path relative to the facet root
+- An object with a `url` key containing a URL to fetch the prompt from
+
+The `platforms` section is OPTIONAL. It contains platform-specific configuration (tool access, permissions, model preferences) keyed by platform name. The CLI validates platform config against known platform schemas at build and publish time. Unknown platforms produce a warning. Invalid config for a known platform is a build error.
+
+### Command Descriptor
+
+| Field         | Required | Type                          | Description                                                            |
+| ------------- | -------- | ----------------------------- | ---------------------------------------------------------------------- |
+| `description` | No       | string                        | Human-readable description of the command.                             |
+| `prompt`      | Yes      | string, `{file: path}`, or `{url: url}` | The command's prompt content or a reference to it.            |
+
+The `prompt` field follows the same rules as the agent descriptor's `prompt`.
+
+## Composed Facets
+
+The `facets` section declares text composed from other published facets. Each entry is either a compact string or a selective object.
+
+### Compact Form
+
+Takes all text assets from the referenced facet:
+
+```yaml
+facets:
+  - "code-review-base@1.0.0"
+```
+
+Format: `"name@version"`. For scoped names: `"@scope/name@version"`.
+
+### Selective Form
+
+Cherry-picks specific assets from the referenced facet:
+
+```yaml
+facets:
+  - name: typescript-patterns
+    version: "2.1.0"
+    skills: [ts-conventions, any-usage]
+    agents: [baseline-reviewer]
+    commands: [lint-check]
+```
+
+| Field      | Required | Type             | Description                          |
+| ---------- | -------- | ---------------- | ------------------------------------ |
+| `name`     | Yes      | string           | Source facet name.                    |
+| `version`  | Yes      | string           | Exact version to compose from.       |
+| `skills`   | No       | array of strings | Skill names to include.              |
+| `agents`   | No       | array of strings | Agent names to include.              |
+| `commands` | No       | array of strings | Command names to include.            |
+
+A selective entry MUST include at least one asset type (`skills`, `agents`, or `commands`). A selective entry with none MUST be rejected.
+
+### Composition Semantics
+
+Text composition is resolved before the facet archive reaches the registry. The `facets` section serves dual purpose:
+
+1. **Composition directive** — instructs the build/publish process which text assets to include from other facets.
+2. **Attribution record** — documents exactly where composed content came from.
+
+The manifest itself is never modified by composition. The build process reads it, resolves composition sources, and packages the composed files alongside local files into the facet archive.
+
+Composed text uses **exact version pins** (e.g., `"name@1.0.0"`). The composed text is frozen at that version in the archive.
+
+### Naming Constraints
+
+Composed asset names MUST NOT collide with locally authored asset names. If a composed facet includes a skill named `code-review` and the local facet also declares a skill named `code-review`, this is a naming collision. Collisions MUST be detected at build time and MUST be an error.
+
+## Server References
+
+The `servers` section declares MCP server references. MCP servers are a separate artifact type from facets (see [MCP Server Assets](/specification/servers)). The `servers` section declares which servers this facet needs. There are two forms depending on the server's execution mode.
+
+### Source-Mode
+
+A string value declares a floor version constraint:
+
+```yaml
+servers:
+  jira: "1.0.0"
+  "@acme/deploy": "0.5.0"
+```
+
+The floor version is the minimum acceptable version. At install time, the CLI resolves the reference to the latest version at or above the floor (see [Install & Resolve](/specification/install)).
+
+### Ref-Mode
+
+An object value with an `image` field declares an OCI image reference:
+
+```yaml
+servers:
+  slack:
+    image: "ghcr.io/acme/slack-bot:v2"
+```
+
+The image reference follows standard OCI conventions: `:` for tags, `@` for digests. At install time, the CLI resolves tags to digests and pins the digest in the lockfile.
+
+### Server Reference Summary
+
+| Key         | Value type | Mode        | Description                                                                |
+| ----------- | ---------- | ----------- | -------------------------------------------------------------------------- |
+| server name | string     | Source-mode | Floor version — minimum acceptable version (e.g., `"1.0.0"`).             |
+| server name | object     | Ref-mode    | Object with `image` field containing an OCI image reference.               |
+
+## Schema Constraints
+
+1. A facet MUST have at least one text asset (locally authored or composed).
+2. Selective `facets` entries MUST include at least one asset type.
+3. Composed asset names MUST NOT collide with locally authored asset names.
+4. The `@` character is used for both scoping (`@scope/name`) and version pinning (`name@version`). Scoped and versioned: `@scope/name@version`.
+5. Consumers MUST tolerate unrecognized fields. Unknown fields MUST be ignored.
+6. The manifest MUST NOT be modified by any tooling — it is immutable.

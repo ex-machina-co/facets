@@ -1,45 +1,33 @@
 ---
-title: "Introduction"
-description: "A package manager for Agents, Skills, and MCP Servers"
-icon: "play"
+title: "Agent Facets"
+sidebarTitle: "Introduction"
+icon: "/assets/icon.svg"
 ---
 
-# What is a Facet?
+A facet packages the text that shapes how an AI assistant behaves: domain-specific instructions (skills), specialized
+agent configurations (agents), and custom slash commands (commands). Facets can also reference MCP servers — code that
+gives the assistant new tool capabilities — without bundling the server code itself.
 
-Facets is a package manager and toolkit for **facets** — modular bundles of skills, agents, commands, and tools that extend AI coding assistants. Think of facets like plugins: each one adds new capabilities to your assistant, and Facets manages discovering, installing, and updating them.
+`facet` is a package manager for **facets** — modular, versioned bundles of skills, agents, commands, and MCP server
+references that extend AI coding assistants.
 
-## Packages
+## Quick Start
 
-Facets is distributed as two packages:
+<Columns cols={2}>
 
-| Package | npm | Description |
-| --- | --- |--- |
-| **Facets CLI** | `@ex-machina/facets` | Core library and CLI for managing facets |
-| **MCP Server** | `@ex-machina/facets-mcp` | MCP server that exposes facet operations to AI assistants |
-
-The **CLI** is what you use directly to manage facets in your project. The **MCP server** lets your AI coding assistant manage facets on your behalf — adding, installing, and updating facets through natural language.
-
-## How it works
-
-1. **Add** a remote facet by URL — Facets fetches and caches the manifest and all its resources
-2. **Install** the facet — resources (skills, agents, commands, tools) are materialized into your project's `.opencode/` directory
-3. **Use** the facet — your AI assistant picks up the new capabilities automatically
-
-Facets tracks dependencies in a `facets.yaml` file and locks versions in a `facets.lock` file, similar to how `package.json` and lock files work in the Node.js ecosystem.
-
-## Next steps
-
-<CardGroup cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Get up and running in under a minute
+  <Card title="Facet Management" href={'/docs/cli/'}>
+    The <Badge>facet</Badge> CLI tool is used to install, update, and manage facets.
   </Card>
-  <Card title="Core Concepts" icon="lightbulb" href="/concepts">
-    Understand how facets, manifests, and installation work
+
+  <Card title="Find Facets" href="https://facet.cafe/">
+    [Facet.cafe](https://facet.cafe) is the canonical registry of facets.
   </Card>
-  <Card title="CLI Reference" icon="terminal" href="/cli/overview">
-    Full reference for every CLI command
+
+  <Card title="Learn More" href='/learn'>
+    Learn about how **facets** are constructed, published, and secured.
   </Card>
-  <Card title="MCP Server" icon="plug" href="/mcp/overview">
-    Let your AI assistant manage facets
+
+  <Card title="Specification" href='/specification'>
+    The official **facet** specification reference.
   </Card>
-</CardGroup>
+</Columns>
