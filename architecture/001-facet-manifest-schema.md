@@ -154,7 +154,7 @@ servers:
 | Field         | Required | Description                                                            |
 | ------------- | -------- | ---------------------------------------------------------------------- |
 | `description` | No       | Human-readable description of the agent.                               |
-| `prompt`      | Yes      | The agent's prompt — a string, `{ file: path }`, or `{ url: url }`.   |
+| `prompt`      | Yes      | The agent's prompt — a string or `{ file: path }`.                    |
 | `platforms`   | No       | Map of platform name → platform-specific agent config (tools, etc.).   |
 
 Agents are partially platform-specific. The prompt is portable across AI assistants. Platform-specific wiring (tool access, permissions, model preferences) lives under `platforms`. Authors target the platforms they care about.
@@ -166,7 +166,7 @@ The CLI validates platform config against known platform schemas at build and pu
 | Field         | Required | Description                                                            |
 | ------------- | -------- | ---------------------------------------------------------------------- |
 | `description` | No       | Human-readable description of the command.                             |
-| `prompt`      | Yes      | The command's prompt — a string, `{ file: path }`, or `{ url: url }`. |
+| `prompt`      | Yes      | The command's prompt — a string or `{ file: path }`.                  |
 
 ### Key Properties
 
