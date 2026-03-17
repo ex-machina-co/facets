@@ -1,15 +1,14 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "types": {
-      "dependsOn": ["^build"]
-    },
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
     "test": {
-      "dependsOn": ["^build", "types", "build"]
+      "dependsOn": []
+    },
+    "types": {
+      "dependsOn": []
+    },
+    "validate": {
+      "dependsOn": ["types", "test"]
     }
   }
 }
