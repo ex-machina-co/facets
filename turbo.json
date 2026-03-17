@@ -1,14 +1,18 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
+    "lint": {
+      "dependsOn": []
+    },
     "test": {
       "dependsOn": []
     },
     "types": {
       "dependsOn": []
     },
-    "validate": {
-      "dependsOn": ["types", "test"]
+    "check": {
+      "dependsOn": ["lint", "types", "test"]
     }
-  }
+  },
+  "ui": "tui"
 }

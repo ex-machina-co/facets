@@ -1,5 +1,2 @@
 [install]
 exact = true
-
-#[test]
-#root = "./dont-run-test-use-bun-check-instead"

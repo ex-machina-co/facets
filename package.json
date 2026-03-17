@@ -10,11 +10,7 @@
     ]
   },
   "scripts": {
-    "check": "biome check . && bun turbo build types test",
-    "lint": "biome check .",
-    "format": "biome check . --fix --unsafe",
-    "validate": "bun turbo validate",
-    "types": "bun turbo types",
+    "check": "bun turbo check",
     "change": "changeset",
     "version-packages": "changeset version",
     "release": "bun run check && changeset publish",
