@@ -1,9 +1,19 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "anthropic/claude-opus-4-6",
+  "permission": {
+    "external_directory": {
+      "../strategy/**": "allow"
+    }
+  },
   "agent": {
-    "explore": {
-      "model": "anthropic/claude-sonnet-4-6"
+    "plan": {
+      "permission": {
+        "edit": {
+          "*": "deny",
+          "openspec/**": "allow"
+        }
+      }
     }
   }
 }
