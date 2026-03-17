@@ -113,6 +113,8 @@ describe('FacetManifestSchema — invalid manifests', () => {
     }
     const result = FacetManifestSchema(input)
     expect(result).toBeInstanceOf(type.errors)
+    const errors = result as InstanceType<typeof type.errors>
+    expect(errors.some((e) => e.path.includes('reviewer') && e.path.includes('prompt'))).toBe(true)
   })
 
   test('server reference object without image field', () => {
@@ -126,6 +128,8 @@ describe('FacetManifestSchema — invalid manifests', () => {
     }
     const result = FacetManifestSchema(input)
     expect(result).toBeInstanceOf(type.errors)
+    const errors = result as InstanceType<typeof type.errors>
+    expect(errors.some((e) => e.path.includes('bad'))).toBe(true)
   })
 })
 

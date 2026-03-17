@@ -2,7 +2,7 @@
 
 A server author writes a `server.yaml` to declare their MCP server's identity, runtime, and entry point. The system validates and loads this manifest so authors get clear feedback when something is wrong, and downstream tools (local install, publish) get a reliable typed representation.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Valid server manifests are accepted
 

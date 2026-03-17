@@ -2,7 +2,7 @@
 
 The lockfile (`facets.lock`) records the exact resolved state of an installed facet so that installations are reproducible across machines and environments. This spec defines what a valid lockfile contains. Install and upgrade flows are future work.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Lockfile captures the installed facet's identity and integrity
 

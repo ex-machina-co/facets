@@ -2,7 +2,7 @@
 
 A facet author writes a `facet.yaml` to declare their facet's identity, text assets, composed facets, and server references. The system validates and loads this manifest so authors get fast, clear feedback when something is wrong, and downstream tools get a reliable typed representation of the manifest.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Valid facet manifests are accepted
 
