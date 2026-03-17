@@ -24,7 +24,7 @@
     "@fission-ai/openspec": "^1.2.0",
     "@types/bun": "latest",
     "mint": "4.2.392",
-    "turbo": "^2.5.0",
+    "turbo": "2.8.17",
     "typescript": "^5"
   }
 }
