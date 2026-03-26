@@ -19,7 +19,7 @@ description: How to use the `facet` CLI
   <Card title={<Badge>facet install</Badge>} href="/docs/cli/install">
     Installs all **facets** from `facet.yaml`
   </Card>
-  <Card title={<Badge>facet update</Badge>} href="/docs/cli/update">
-    Updates **facets** through an interactive CLI
+  <Card title={<Badge>facet upgrade</Badge>} href="/docs/cli/upgrade">
+    Upgrades installed **facets** through an interactive CLI
   </Card>
 </Columns>

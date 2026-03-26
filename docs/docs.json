@@ -39,7 +39,7 @@
       },
       {
         "group": "CLI",
-        "pages": ["cli/add", "cli/build", "cli/info", "cli/install", "cli/publish", "cli/remove", "cli/update"]
+        "pages": ["cli/add", "cli/build", "cli/info", "cli/install", "cli/publish", "cli/remove", "cli/upgrade"]
       },
       {
         "group": "Specification",

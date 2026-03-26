@@ -1,28 +1,24 @@
 {
-  "name": "@ex-machina/facets",
+  "name": "@ex-machina/facet",
   "repository": {
     "type": "git",
     "url": "https://github.com/ex-machina-co/facets",
-    "directory": "packages/facets"
+    "directory": "packages/cli"
   },
-  "version": "0.2.3",
+  "version": "0.1.0",
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
   "bin": {
-    "facets": "./src/cli.ts"
+    "facet": "./dist/facet"
   },
   "scripts": {
+    "build": "bun build src/cli.ts --compile --outfile dist/facet",
     "lint": "biome check .",
-    "format": "biome check . --fix --unsafe",
     "types": "tsc --noEmit",
     "test": "bun test"
   },
   "dependencies": {
-    "arktype": "2.1.29",
-    "comment-json": "^4.2.5",
-    "yaml": "^2.7.0"
+    "@ex-machina/facet-core": "workspace:*",
+    "@bomb.sh/args": "0.3.1"
   },
   "devDependencies": {
     "@types/bun": "1.3.10"
