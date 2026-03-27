@@ -17,8 +17,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@ex-machina/facet-core": "workspace:*",
-    "@bomb.sh/args": "0.3.1"
+    "@bomb.sh/args": "0.3.1",
+    "@ex-machina/facet-core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "1.3.10"

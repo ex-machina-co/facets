@@ -52,7 +52,14 @@ export interface ResolvedFacetManifest {
   version: string
   description?: string
   author?: string
-  skills?: string[]
+  skills?: Record<
+    string,
+    {
+      description: string
+      prompt: string
+      platforms?: Record<string, unknown>
+    }
+  >
   agents?: Record<
     string,
     {
@@ -73,16 +80,34 @@ export interface ResolvedFacetManifest {
 }
 
 /**
- * Resolves all prompt fields in agents and commands to their string content.
+ * Resolves all prompt fields in skills, agents, and commands to their string content.
  *
  * - Inline strings are used as-is.
  * - File references (`{file: path}`) are read relative to the root directory.
+ *
+ * This also serves as file existence verification for all three asset types —
+ * if a referenced file doesn't exist, resolution fails with an error identifying
+ * the asset and the missing file.
  *
  * Returns a new manifest with all prompts resolved to strings, or an error
  * result identifying which prompt failed and why.
  */
 export async function resolvePrompts(manifest: FacetManifest, rootDir: string): Promise<Result<ResolvedFacetManifest>> {
   const errors: ValidationError[] = []
+
+  // Resolve skill prompts
+  let resolvedSkills: ResolvedFacetManifest['skills'] | undefined
+  if (manifest.skills) {
+    resolvedSkills = {}
+    for (const [name, skill] of Object.entries(manifest.skills)) {
+      const resolvedPrompt = await resolvePrompt(skill.prompt, rootDir, `skills.${name}.prompt`)
+      if (typeof resolvedPrompt === 'string') {
+        resolvedSkills[name] = { ...skill, prompt: resolvedPrompt }
+      } else {
+        errors.push(resolvedPrompt)
+      }
+    }
+  }
 
   // Resolve agent prompts
   let resolvedAgents: ResolvedFacetManifest['agents'] | undefined
@@ -121,7 +146,7 @@ export async function resolvePrompts(manifest: FacetManifest, rootDir: string): 
     version: manifest.version,
     ...(manifest.description !== undefined && { description: manifest.description }),
     ...(manifest.author !== undefined && { author: manifest.author }),
-    ...(manifest.skills !== undefined && { skills: manifest.skills }),
+    ...(resolvedSkills !== undefined && { skills: resolvedSkills }),
     ...(resolvedAgents !== undefined && { agents: resolvedAgents }),
     ...(resolvedCommands !== undefined && { commands: resolvedCommands }),
     ...(manifest.facets !== undefined && { facets: manifest.facets }),

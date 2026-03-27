@@ -1,16 +1,19 @@
 ---
-status: proposed
+status: accepted
 date: 2026-03-05
 decision-makers: julian
+modified-by: local-authoring
 ---
 
 # ADR-001: Facet Manifest Schema
 
 ## Status History
 
-| status   | date       | decision-makers | github |
-| -------- | ---------- | --------------- | ------ |
-| proposed | 2026-03-05 | julian          |        |
+| status                              | date       | decision-makers | github |
+| ----------------------------------- | ---------- | --------------- | ------ |
+| proposed                            | 2026-03-05 | julian          |        |
+| accepted                            | 2026-03-27 | julian          |        |
+| modified by change: local-authoring | 2026-03-27 | julian          |        |
 
 ## Context and Problem Statement
 
@@ -45,7 +48,13 @@ version: 1.0.0
 description: "Acme org developer toolkit"
 author: acme-org
 
-skills: [code-standards, pr-template]
+skills:
+  code-standards:
+    description: "Org coding standards"
+    prompt: { file: skills/code-standards.md }
+  pr-template:
+    description: "PR template guidelines"
+    prompt: { file: skills/pr-template.md }
 
 agents:
   reviewer:
@@ -89,7 +98,7 @@ servers:
 
 | Field      | Required | Description                                                                  |
 | ---------- | -------- | ---------------------------------------------------------------------------- |
-| `skills`   | No       | Array of skill names. Each corresponds to a file in the facet.               |
+| `skills`   | No       | Map of skill name → skill descriptor (description, prompt, platform config). |
 | `agents`   | No       | Map of agent name → agent descriptor (description, prompt, platform config). |
 | `commands` | No       | Map of command name → command descriptor (description, prompt).              |
 
@@ -160,6 +169,16 @@ servers:
 Agents are partially platform-specific. The prompt is portable across AI assistants. Platform-specific wiring (tool access, permissions, model preferences) lives under `platforms`. Authors target the platforms they care about.
 
 The CLI validates platform config against known platform schemas at build and publish time. At install time, platform config is composed into the agent's platform-native format (e.g., YAML frontmatter). The set of known platforms and their schemas is maintained by the CLI, not the manifest spec.
+
+**Skill descriptor:**
+
+| Field         | Required | Description                                                            |
+| ------------- | -------- | ---------------------------------------------------------------------- |
+| `description` | Yes      | Human-readable description of the skill.                               |
+| `prompt`      | Yes      | The skill's prompt — a string or `{ file: path }`.                    |
+| `platforms`   | No       | Map of platform name → platform-specific skill config.                 |
+
+Skills require both a description and a prompt — consumers need to know what a skill does to decide whether to use it. Agents and commands have optional descriptions because their names and prompts are typically sufficient context. All three asset types share the same descriptor structure (name → descriptor with prompt and optional platform config), with skills being stricter about requiring a description.
 
 **Command descriptor:**
 

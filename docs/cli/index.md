@@ -3,11 +3,20 @@ title: Overview
 description: How to use the `facet` CLI
 ---
 
-[//]: # (TODO: we need to add in a short paragraph here that is an overview of the CLI)
+The `facet` CLI helps you create, build, and manage facets — portable bundles of AI tooling configuration.
 
-[//]: # (TODO: title?)
+### Authoring
 
-[//]: # (TODO: I think this is a good listing...should probably keep it to 4)
+<Columns cols={2}>
+  <Card title={<Badge>facet create</Badge>} href={"/docs/cli/create"}>
+    Create a new **facet** project interactively
+  </Card>
+  <Card title={<Badge>facet build</Badge>} href="/docs/cli/build">
+    Validate and build a **facet** for distribution
+  </Card>
+</Columns>
+
+### Package management
 
 <Columns cols={2}>
   <Card title={<Badge>facet add</Badge>} href={"/docs/cli/add"}>

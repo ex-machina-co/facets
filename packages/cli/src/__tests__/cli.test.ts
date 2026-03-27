@@ -2,7 +2,8 @@ import { describe, expect, test } from 'bun:test'
 import { resolve } from 'node:path'
 
 const CLI_PATH = resolve(import.meta.dir, '../../dist/facet')
-const COMMAND_NAMES = ['add', 'build', 'info', 'init', 'install', 'list', 'publish', 'remove', 'upgrade']
+const COMMAND_NAMES = ['add', 'build', 'create', 'info', 'install', 'list', 'publish', 'remove', 'upgrade']
+const STUB_COMMAND_NAMES = ['add', 'info', 'install', 'list', 'publish', 'remove', 'upgrade']
 
 type ExecResult = {
   stdout: string
@@ -69,7 +70,7 @@ describe('CLI — bare invocation', () => {
 // --- Stub commands ---
 
 describe('CLI — stub commands', () => {
-  test.each(COMMAND_NAMES)('"%s" prints not yet implemented with command name and exits 0', async (cmd) => {
+  test.each(STUB_COMMAND_NAMES)('"%s" prints not yet implemented with command name and exits 0', async (cmd) => {
     const result = await runCli(cmd)
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain(cmd)

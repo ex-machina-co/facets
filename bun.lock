@@ -16,7 +16,7 @@
     },
     "packages/cli": {
       "name": "@ex-machina/facet",
-      "version": "0.2.3",
+      "version": "0.0.1",
       "bin": {
         "facet": "./dist/facet",
       },
@@ -33,7 +33,7 @@
     },
     "packages/core": {
       "name": "@ex-machina/facet-core",
-      "version": "0.1.0",
+      "version": "0.0.1",
       "dependencies": {
         "arktype": "2.1.29",
         "comment-json": "^4.2.5",

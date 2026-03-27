@@ -38,7 +38,9 @@ describe('loadManifest', () => {
 name: test-facet
 version: "1.0.0"
 skills:
-  - code-review
+  code-review:
+    description: "Reviews code for issues"
+    prompt: "Review the code for common issues."
 `,
     )
 
@@ -47,7 +49,8 @@ skills:
     if (result.ok) {
       expect(result.data.name).toBe('test-facet')
       expect(result.data.version).toBe('1.0.0')
-      expect(result.data.skills).toEqual(['code-review'])
+      expect(result.data.skills?.['code-review']?.description).toBe('Reviews code for issues')
+      expect(result.data.skills?.['code-review']?.prompt).toBe('Review the code for common issues.')
     }
   })
 
@@ -127,7 +130,9 @@ version: "1.0.0"
 description: "Acme dev toolkit"
 author: acme-org
 skills:
-  - code-standards
+  code-standards:
+    description: "Org coding standards"
+    prompt: "Follow org coding standards."
 agents:
   reviewer:
     description: "Code reviewer"
@@ -233,14 +238,19 @@ describe('resolvePrompts', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: ['x'],
+      skills: {
+        x: {
+          description: 'A skill',
+          prompt: 'Do x' as const,
+        },
+      },
     }
 
     const result = await resolvePrompts(manifest, '/tmp')
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.data.name).toBe('test')
-      expect(result.data.skills).toEqual(['x'])
+      expect(result.data.skills?.x?.prompt).toBe('Do x')
     }
   })
 })
