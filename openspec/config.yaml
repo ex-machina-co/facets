@@ -49,7 +49,7 @@ context: |
 
   ### Enforcement
   - Requirements referencing internal class names, method names, or module paths SHALL be rejected
-  - Infrastructure mechanisms (tracing, caching, queuing) SHALL be specced through the lens of the product
+  - Infrastructure mechanisms (tracing, caching, queuing) SHALL be specified through the lens of the product
     domain that consumes them, not as standalone capabilities
   - Specs SHALL be organized by product domain (the domain that delivers value), not by infrastructure domain
 
@@ -83,6 +83,39 @@ context: |
   If an ADR is believed to be incorrect, file a new ADR to supersede it. Do not implement against the current ADR
   while the revision is pending.
 
+  ---
+
+  ## Article IV: Roadmap Phase Lifecycle
+
+  ### Statement
+  The strategy repository (`../strategy`) contains a roadmap of sequenced execution phases for each namespace
+  (e.g., `facets/roadmap/`). Each phase has a lifecycle status: `planned`, `active`, `completed`, or `deferred`.
+
+  Before starting work that corresponds to a roadmap phase, the phase's current status MUST be checked. If the
+  phase is `planned`, it MUST be transitioned to `active` (by updating its frontmatter in the strategy repo)
+  before implementation begins.
+
+  A phase MUST only be transitioned to `completed` when ALL success criteria defined in the phase document are
+  met. Completing a single OpenSpec change set does not necessarily complete a roadmap phase — phases are often
+  long-lived and may span multiple change sets. The phase MUST be archived (frontmatter updated to `completed`,
+  file moved to `<namespace>/roadmap/archive/`) only when every success criterion is satisfied, per the process
+  defined in `../strategy/processes/roadmap/README.md`.
+
+  ### Rationale
+  Roadmap phases are the bridge between strategy and implementation. Without explicit lifecycle tracking, phases
+  drift into ambiguous states — work begins without marking a phase active, or a phase is declared complete
+  before all acceptance criteria are met. Explicit status transitions ensure the roadmap accurately reflects
+  what is in progress and what is done.
+
+  ### Enforcement
+  - Proposals for work that corresponds to a roadmap phase MUST reference the phase and its current status
+  - Implementation MUST NOT begin on a `planned` phase without first transitioning it to `active`
+  - A phase MUST NOT be marked `completed` until every success criterion in the phase document is verified
+  - Archival follows the process in `../strategy/processes/roadmap/README.md`
+
+  ### Override Process
+  Not applicable — roadmap lifecycle is a governance constraint and cannot be overridden.
+
 # Add custom rules for specific artifacts.
 rules:
   specs:
@@ -90,20 +123,21 @@ rules:
     - Each requirement MUST be atomic and focused on a single aspect of functionality or design
     - Requirements MUST be testable and verifiable through implementation and testing
     - Requirements MUST describe value delivered to customers, users, or developers — NOT internal implementation mechanisms
-    - "Litmus test: ask 'Would a customer, user, or developer care if this stopped working?' If not, it belongs in design.md, not spec.md"
+    - Litmus test — ask 'Would a customer, user, or developer care if this stopped working?' If not, it belongs in design.md, not spec.md
     - MUST NOT reference internal class names, method names, module paths, or internal data structures in requirements or scenarios
     - MUST NOT spec infrastructure mechanisms (OTel spans, caching layers, internal job queues) — spec the VALUE those mechanisms deliver instead
     - Scenarios MUST describe observable outcomes from the perspective of whoever receives the value (end user, developer, API consumer)
     - Specs MUST be organized by product domain (the domain that delivers value), not by infrastructure domain (the domain that provides mechanisms)
     - MUST NOT use domain names in requirements (e.g., "the planning domain SHALL", "available for the execution domain to execute", "the orchestration layer SHALL") — use "the system," "the user," or other user-visible concepts as subjects
-    - "A capability IS a product domain. Capability names MUST be domain names (e.g., `execution`, `planning`, `entry`), NOT domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). A domain has exactly ONE spec — features within a domain are requirements inside that spec, not separate capabilities."
+    - A capability IS a product domain. Capability names MUST be domain names (e.g., `execution`, `planning`, `entry`), NOT domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). A domain has exactly ONE spec — features within a domain are requirements inside that spec, not separate capabilities.
   proposal:
     - Proposals MUST be under 500 words
     - SHOULD be distilled down to the smallest thing we can do to deliver customer-focused value
     - Large refactors SHOULD be simple, small, OR incredibly well-justified
     - MUST include a "Non-goals" section
-    - "Each capability in the Capabilities section MUST correspond to a product domain, not a feature within a domain. Use domain names (e.g., `execution`, `planning`) not domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). Check `openspec/specs/` for existing domain names before inventing new ones."
-    - "MUST reference which ADRs in `architecture/` informed the proposal. If no relevant ADRs exist, state so explicitly."
+    - Each capability in the Capabilities section MUST correspond to a product domain, not a feature within a domain. Use domain names (e.g., `execution`, `planning`) not domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). Check `openspec/specs/` for existing domain names before inventing new ones.
+    - MUST reference which ADRs in `architecture/` informed the proposal. If no relevant ADRs exist, state so explicitly.
+    - If the proposed work corresponds to a roadmap phase in `../strategy/<namespace>/roadmap/`, the proposal MUST reference the phase file and note its current status. If the phase is `planned`, the proposal MUST note that the phase needs to be transitioned to `active` before implementation begins.
   design:
     - MUST identify any user-facing documentation in `docs/` and root `README.md` that would need updating based on the proposed changes
     - If the design changes observable behavior, CLI commands, APIs, or concepts covered in `docs/`, the design MUST note which doc files need updating
@@ -117,3 +151,4 @@ rules:
       - You MUST NOT load the skill until you've written the tasks
     - Reclassify each of the step you wrote as it's VIPER step type and prefix the step description with the type
     - MUST check `docs/` and root `README.md` for content that references changed behavior, and SHOULD include documentation update tasks when affected docs are found
+    - If the work corresponds to a roadmap phase, the tasks MUST include a final step to check whether the phase's success criteria are fully met. If all criteria are satisfied, the step SHOULD transition the phase to `completed` and archive it. If criteria remain unmet, the step MUST note explicitly what remains.
