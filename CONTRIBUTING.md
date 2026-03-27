@@ -4,13 +4,14 @@ Thanks for your interest in contributing to Facets! This guide will help you get
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) v1.3.10+
+- [mise](https://mise.jdx.dev) — manages the correct Bun version automatically via `mise.toml`
 
 ## Setup
 
 ```sh
 git clone <repo-url>
 cd facets
+mise install   # installs the pinned Bun version
 bun install
 ```
 

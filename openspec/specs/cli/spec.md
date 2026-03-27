@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+TBD — Defines the command-line interface behavior for argument parsing, command dispatch, help output, version reporting, and error handling.
+
+## Requirements
 
 ### Requirement: Users can see available commands
 

@@ -17,11 +17,14 @@ Full documentation is available at [agentfacets.io](https://agentfacets.io).
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (v1.3.10+)
+- [mise](https://mise.jdx.dev) — manages the correct Bun version automatically
 
 ### Setup
 
 ```sh
+# Install the pinned Bun version
+mise install
+
 # Install dependencies
 bun install
 

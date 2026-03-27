@@ -1,4 +1,12 @@
 
+## Strategy
+
+Company-wide strategy decision records are located at `../strategy` (the sibling `strategy/` repository). This includes Strategic Decision Records (SDRs), initiatives, and roadmap phases organized by namespace.
+
+The `facets/` namespace within that repo (`../strategy/facets/`) contains strategy decisions specific to this project — including SDRs, initiatives, and roadmap entries. Consult these when you need strategic context for decisions affecting this project.
+
+## Bun
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
