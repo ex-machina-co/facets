@@ -34,28 +34,9 @@ context: |
 
   ## Article II: Value-Centric Specifications
 
-  ### Statement
-  All specifications MUST describe customer, user, or developer value — not internal implementation mechanisms.
-  Specs answer "what value does the system deliver?" not "how does the code work internally?"
-
-  The litmus test for every requirement: "Would a customer, user, or developer care if this stopped working?"
-  If the answer is no, the content belongs in a design document, not a specification.
-
-  ### Rationale
-  Specs that describe internal mechanisms (OTel attribute names, internal method signatures, class hierarchies)
-  become tightly coupled to implementation. When implementation changes, these specs break even though customer
-  value hasn't changed. Value-centric specs remain stable across refactors and make the intent of the system
-  legible to non-implementors.
-
-  ### Enforcement
-  - Requirements referencing internal class names, method names, or module paths SHALL be rejected
-  - Infrastructure mechanisms (tracing, caching, queuing) SHALL be specified through the lens of the product
-    domain that consumes them, not as standalone capabilities
-  - Specs SHALL be organized by product domain (the domain that delivers value), not by infrastructure domain
-
-  ### Override Process
-  Infrastructure specs MAY be created when the infrastructure IS the product (e.g., a shared platform team
-  publishing an API). Document the override rationale in the spec's Purpose section.
+  The authoritative source of truth for how specifications are written is @openspec/specs/spec-governance/spec.md.
+  All spec authoring — including value-centric requirements, domain naming, and avoidance of internal implementation
+  details — is governed by that spec. When this constitution and spec-governance conflict, spec-governance is correct.
 
   ---
 
@@ -121,15 +102,7 @@ rules:
   specs:
     - All requirements MUST use RFC 2119 keywords to indicate requirement levels
     - Each requirement MUST be atomic and focused on a single aspect of functionality or design
-    - Requirements MUST be testable and verifiable through implementation and testing
-    - Requirements MUST describe value delivered to customers, users, or developers — NOT internal implementation mechanisms
-    - Litmus test — ask 'Would a customer, user, or developer care if this stopped working?' If not, it belongs in design.md, not spec.md
-    - MUST NOT reference internal class names, method names, module paths, or internal data structures in requirements or scenarios
-    - MUST NOT spec infrastructure mechanisms (OTel spans, caching layers, internal job queues) — spec the VALUE those mechanisms deliver instead
-    - Scenarios MUST describe observable outcomes from the perspective of whoever receives the value (end user, developer, API consumer)
-    - Specs MUST be organized by product domain (the domain that delivers value), not by infrastructure domain (the domain that provides mechanisms)
-    - MUST NOT use domain names in requirements (e.g., "the planning domain SHALL", "available for the execution domain to execute", "the orchestration layer SHALL") — use "the system," "the user," or other user-visible concepts as subjects
-    - A capability IS a product domain. Capability names MUST be domain names (e.g., `execution`, `planning`, `entry`), NOT domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). A domain has exactly ONE spec — features within a domain are requirements inside that spec, not separate capabilities.
+    - All spec requirements and scenarios MUST comply with @openspec/specs/spec-governance/spec.md — read the spec before writing or reviewing any specification
   proposal:
     - Proposals MUST be under 500 words
     - SHOULD be distilled down to the smallest thing we can do to deliver customer-focused value
