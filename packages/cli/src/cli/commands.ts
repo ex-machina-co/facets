@@ -1,3 +1,6 @@
+import { buildCommand } from '../commands/build.ts'
+import { createCommand } from '../commands/create.ts'
+
 export type Command = {
   name: string
   description: string
@@ -17,9 +20,9 @@ function stubCommand(name: string, description: string): Command {
 
 export const commands: Record<string, Command> = {
   add: stubCommand('add', 'Add a facet to the project'),
-  build: stubCommand('build', 'Build a facet from the current directory'),
+  build: buildCommand,
+  create: createCommand,
   info: stubCommand('info', 'Show information about a facet'),
-  init: stubCommand('init', 'Create a new facet project'),
   install: stubCommand('install', 'Install all facets from the lockfile'),
   list: stubCommand('list', 'List installed facets'),
   publish: stubCommand('publish', 'Publish a facet to the registry'),

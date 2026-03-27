@@ -5,6 +5,13 @@ import { type } from 'arktype'
 /** Prompt field: inline string or file reference */
 const Prompt = type('string').or({ file: 'string' })
 
+/** Skill descriptor — description is required for skills */
+const SkillDescriptor = type({
+  description: 'string',
+  prompt: Prompt,
+  'platforms?': type.Record('string', 'unknown'),
+})
+
 /** Agent descriptor */
 const AgentDescriptor = type({
   'description?': 'string',
@@ -45,7 +52,7 @@ export const FacetManifestSchema = type({
   version: 'string',
   'description?': 'string',
   'author?': 'string',
-  'skills?': 'string[]',
+  'skills?': type.Record('string', SkillDescriptor),
   'agents?': type.Record('string', AgentDescriptor),
   'commands?': type.Record('string', CommandDescriptor),
   'facets?': FacetsEntry.array(),
@@ -73,7 +80,7 @@ export function checkFacetManifestConstraints(manifest: FacetManifest): FacetMan
   const errors: FacetManifestError[] = []
 
   // Constraint 1: at least one text asset
-  const hasSkills = manifest.skills && manifest.skills.length > 0
+  const hasSkills = manifest.skills && Object.keys(manifest.skills).length > 0
   const hasAgents = manifest.agents && Object.keys(manifest.agents).length > 0
   const hasCommands = manifest.commands && Object.keys(manifest.commands).length > 0
   const hasFacets = manifest.facets && manifest.facets.length > 0
