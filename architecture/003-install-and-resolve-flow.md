@@ -47,9 +47,11 @@ This ADR defines what happens during `facet install` and `facet upgrade`.
 
 2. **Read the manifest.** Parse the `facet.yaml` from the bundle.
 
-3. **Install text artifacts.** Extract the bundle's text artifacts (skills, agent prompts, command prompts — both locally-authored and composed) into the local facet directory. No resolution needed — the bundle is self-contained.
+3. **Present text assets for review.** Show the consumer a summary of all text assets to be installed (asset count by type, names). The consumer can inspect any individual asset before accepting. If an asset with the same name already exists on disk (collision), present the consumer with options: accept the facet's version, keep the existing content as an override, or create a new override. An accept-all fast path is available for consumers who trust the publisher.
 
-4. **Resolve MCP server references.** For each entry in the `servers` section:
+4. **Install text artifacts.** Extract the bundle's text artifacts (skills, agent prompts, command prompts — both locally-authored and composed) into the provider-specified install directories according to the consumer's decisions from the review step. No resolution needed — the bundle is self-contained.
+
+5. **Resolve MCP server references.** For each entry in the `servers` section:
 
    **Source-mode** (string value — floor version):
    - Query the registry for the latest version of the named server at or above the floor constraint.
@@ -64,7 +66,7 @@ This ADR defines what happens during `facet install` and `facet upgrade`.
 
    Resolution is always one level deep. MCP servers are terminal — they do not declare dependencies on other servers. There is no transitive resolution.
 
-5. **Write the lockfile.** Record the exact resolved versions and content hashes:
+6. **Write the lockfile.** Record the exact resolved versions and content hashes:
 
     ```yaml
     # facets.lock
@@ -90,7 +92,7 @@ This ADR defines what happens during `facet install` and `facet upgrade`.
         api_surface: "sha256:567ghi..."
     ```
 
-6. **Configure servers for the active platform.** For each resolved server, generate the platform-specific configuration needed to start the server (e.g., MCP server config entries for the active AI assistant). Platform configuration details are handled by the CLI's platform adapters.
+7. **Configure servers for the active platform.** For each resolved server, generate the platform-specific configuration needed to start the server (e.g., MCP server config entries for the active AI assistant). Platform configuration details are handled by the CLI's platform adapters.
 
 **Lockfile-first installs:** If a lockfile already exists, `facet install` uses the pinned versions instead of resolving from the registry. This ensures reproducible installs across team members and environments. Only `facet upgrade` resolves newer versions.
 
@@ -112,13 +114,30 @@ This ADR defines what happens during `facet install` and `facet upgrade`.
    - If unchanged — the upgrade is structurally safe.
    - If changed — a structural change occurred (tools added/removed, parameters changed, schemas modified). Flag this to the consumer.
 
-4. **Present available updates.** Show the consumer what's available, including API surface change status for each server. The consumer controls which updates to apply.
+4. **Present available updates.** Show the consumer what's available:
+   - **Text assets**: For each text asset that changed, show the diff. For new assets added in the new version, show their content. For assets removed in the new version, flag the removal. The consumer gets accept/reject/modify for changed and new assets, and accept/reject for removed assets.
+   - **Servers**: Show API surface change status for each server.
+   The consumer controls which updates to apply.
 
 5. **Apply selected updates.**
-   - If the facet version changed: download the new bundle, verify integrity, re-extract text artifacts, and re-resolve any server references that have new floor constraints.
+   - If the facet version changed: download the new bundle, verify integrity, extract text artifacts according to the consumer's decisions from the change resolution flow. Re-resolve any server references that have new floor constraints.
    - If server versions changed: download new server artifacts, verify integrity, update platform configuration.
 
 6. **Write the updated lockfile.** Record the new versions, content hashes, and API surface hashes for all updated artifacts.
+
+### `facet uninstall`
+
+**Purpose:** Remove a facet and its managed assets.
+
+**Steps:**
+
+1. **Read the lockfile.** Identify all managed assets belonging to the facet.
+
+2. **Present assets for removal.** Show the consumer a summary of all text assets and server configurations that will be removed. For each asset, the consumer can accept the removal or reject it (keep as unmanaged). There is no modify option — the facet no longer owns the asset.
+
+3. **Remove accepted assets.** Delete text assets the consumer accepted for removal from the provider-specified install directories. Remove server configurations.
+
+4. **Update the lockfile.** Remove the facet entry and all its managed asset records. Assets kept by the consumer are not recorded in the lockfile — they are now unmanaged.
 
 ### Lockfile semantics
 
@@ -141,7 +160,7 @@ The lockfile ensures reproducible installs. It should be version-controlled so t
 
 - **Text artifact resolution** — text is already in the bundle. No install-time fetching of composed facets.
 - **Transitive server resolution** — servers are terminal. No multi-level dependency resolution.
-- **Local disk layout specifics** — where files are placed on disk is an implementation concern, not a spec-level decision.
+- **Local disk layout specifics** — where files are placed on disk is determined by the active provider's platform adapter. Directory mapping is a CLI concern, not a spec-level decision.
 
 ## Consequences
 
@@ -152,6 +171,7 @@ The lockfile ensures reproducible installs. It should be version-controlled so t
 * Unified upgrade flow covers both facet and server updates interactively
 * API surface hashing catches structural breaking changes before they affect users
 * Text artifact installation requires no network access beyond downloading the bundle itself
+* Text asset changes are never silent — consumers review text assets at install, see diffs at upgrade, and confirm removals at uninstall
 
 ### Neutral
 

@@ -48,7 +48,7 @@ Text and code follow different distribution paths:
 
 - **Server assets** are resolved at **install time**. The facet manifest declares server references (floor constraints for source-mode, OCI image references for ref-mode). The CLI resolves these to specific versions and pins them in the lockfile.
 
-This separation exists because text and code have different update characteristics. Stale text (an older version of a skill) is safe — it may be suboptimal but it will not break anything. Stale code (an older version of a server with a security vulnerability) is dangerous. Floor constraints allow servers to be updated for security fixes without requiring the facet author to re-publish.
+This separation exists because text and code have different update characteristics. Stale text (an older version of a skill) is safe — it may be suboptimal but it will not break anything. However, *changed* text is a trust concern — prompt injection, behavioral changes, or context manipulation can be introduced through text updates. Text asset changes are surfaced to the consumer at install and upgrade time so they can review what changed (see [Install & Resolve](/specification/install)). Stale code (an older version of a server with a security vulnerability) is dangerous. Floor constraints allow servers to be updated for security fixes without requiring the facet author to re-publish.
 
 ## Lifecycle
 

@@ -12,6 +12,15 @@ Canonical terms for the Facets ecosystem. All SDRs and ADRs (Facets OSS and Face
 | **MCP server**   | An artifact type containing code (not text). Published independently from facets, versioned independently, resolved at install time. Two execution modes: source-mode and ref-mode. Use "servers" as shorthand after first use in a document. |
 | **Text artifact** | An artifact containing text — a skill, an agent prompt, or a command prompt. Distinguishes text content from code content (MCP servers). |
 
+## Asset Management
+
+| Term                | Definition                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Managed asset**   | A text asset installed by a facet and tracked in the lockfile. The lockfile records the facet, version, content hash, and any override.                              |
+| **Unmanaged asset** | A text asset that exists in a provider's install directory but is not connected to any facet. Either user-created or kept from an uninstalled facet.                 |
+| **Override**        | A user modification to a managed text asset, stored as a unified diff in the lockfile. Detected by content hash mismatch. Preserved across upgrades via 3-way merge. |
+| **Asset collision** | When a managed or to-be-managed asset has the same name as an existing asset on disk within the same asset type. Requires user resolution at install time.           |
+
 ## Execution Modes
 
 | Term              | Definition                                                                                                             |
@@ -47,5 +56,7 @@ Use "integrity" when referring to the verification process ("integrity verificat
 | ------------- | -------------------------------------------------------------------- |
 | **Authoring** | A facet — manifest + raw content in a local directory.               |
 | **Publishing** | The facet is built into a bundle — artifacts assembled, hashes computed, stored in registry. |
-| **Installing** | The bundle is downloaded, verified, extracted. Text artifacts are placed locally. MCP server references are resolved. The result is a facet ready to load. |
-| **Running**   | The installed facet is loaded by the AI assistant. Text artifacts are in context. MCP servers are running processes. |
+| **Installing**    | The bundle is downloaded and verified. Text assets are presented to the consumer for review, then placed in provider-specified directories. MCP server references are resolved and pinned in the lockfile. |
+| **Upgrading**     | Text asset changes are surfaced to the consumer with diffs. The consumer accepts, rejects, or modifies each change. Server API surface changes are flagged. The lockfile is updated. |
+| **Uninstalling**  | Assets being removed are summarized. The consumer can keep individual text assets as unmanaged. The lockfile entry is removed. |
+| **Running**       | The installed facet is loaded by the AI assistant. Text artifacts are in context. MCP servers are running processes. |

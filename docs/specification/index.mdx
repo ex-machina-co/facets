@@ -40,8 +40,10 @@ Three integrity mechanisms protect the supply chain:
 | -------------- | ------------------------------------------------------------------------------------------------ |
 | **Authoring**  | An author creates a facet — a manifest and text assets in a local directory.                     |
 | **Publishing** | The facet is built into an archive — text assets assembled, hashes computed, stored in registry.  |
-| **Installing** | The archive is downloaded, verified, extracted. Server references are resolved and pinned.        |
-| **Running**    | The installed facet is loaded by the AI assistant. Text assets are in context. Servers are running.|
+| **Installing**    | The archive is downloaded and verified. Text assets are presented for review, then placed in provider-specified directories. Server references are resolved and pinned. |
+| **Upgrading**     | Text asset changes are surfaced with diffs. The consumer accepts, rejects, or modifies each change. Server API surface changes are flagged. |
+| **Uninstalling**  | Assets being removed are summarized. The consumer can keep individual text assets as unmanaged. |
+| **Running**       | The installed facet is loaded by the AI assistant. Text assets are in context. Servers are running. |
 
 ## Security and Trust
 
@@ -53,7 +55,7 @@ Facets enable arbitrary text injection into AI assistant contexts and arbitrary 
 
 3. **Server execution safety**: The CLI MUST control exactly what executes. No arbitrary command or argument execution. Servers MUST be stopped when the AI assistant session ends.
 
-4. **User consent**: Consumers SHOULD understand what a facet contains before installing it. Implementors SHOULD provide clear mechanisms for reviewing facet contents and server capabilities.
+4. **User consent**: Consumers SHOULD understand what a facet contains before installing it, what changed during upgrades, and what is being removed during uninstall. Implementors SHOULD provide clear mechanisms for reviewing facet contents, text asset changes, and server capabilities.
 
 ## Specification Sections
 
