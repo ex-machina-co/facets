@@ -8,10 +8,10 @@ Full documentation is available at [agentfacets.io](https://agentfacets.io).
 
 ## Packages
 
-| Package                                     | NPM                      | Description                              |
-|---------------------------------------------|--------------------------|------------------------------------------|
-| [Facets CLI](packages/facets/README.md)     | `@ex-machina/facets`     | Core library and CLI                     |
-| [MCP Server](packages/facets-mcp/README.md) | `@ex-machina/facets-mcp` | MCP server that exposes facet operations |
+| Package                                   | NPM                        | Description                              |
+|-------------------------------------------|----------------------------|------------------------------------------|
+| [Facet CLI](packages/cli/README.md)       | `@ex-machina/facet`        | CLI tool for managing facets             |
+| [Facet Core](packages/core/README.md)     | `@ex-machina/facet-core`   | Schemas, loaders, and shared types       |
 
 ## Development
 

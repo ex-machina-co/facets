@@ -57,6 +57,32 @@ context: |
   Infrastructure specs MAY be created when the infrastructure IS the product (e.g., a shared platform team
   publishing an API). Document the override rationale in the spec's Purpose section.
 
+  ---
+
+  ## Article III: ADR Authority
+
+  ### Statement
+  Architectural Decision Records (ADRs) in `architecture/` are the authoritative source of truth for system design —
+  including command names, API shapes, data formats, and terminology. Documentation in `docs/` describes these decisions
+  for users but MUST NOT contradict them.
+
+  When ADRs and documentation conflict, the ADR is correct and documentation MUST be updated to match.
+  Implementations MUST NOT silently drift from accepted ADRs.
+
+  ### Rationale
+  ADRs capture the reasoning behind design decisions. Documentation is a downstream artifact that describes those
+  decisions for consumption. If docs diverge from ADRs, the system has two conflicting sources of truth — leading to
+  implementations that match one but not the other.
+
+  ### Enforcement
+  - Proposals referencing behavior covered by an existing ADR MUST cite the ADR
+  - Implementations that contradict an accepted ADR SHALL be rejected
+  - If an ADR is wrong, it MUST be revised or superseded through the ADR process before implementation diverges
+
+  ### Override Process
+  If an ADR is believed to be incorrect, file a new ADR to supersede it. Do not implement against the current ADR
+  while the revision is pending.
+
 # Add custom rules for specific artifacts.
 rules:
   specs:
@@ -77,6 +103,7 @@ rules:
     - Large refactors SHOULD be simple, small, OR incredibly well-justified
     - MUST include a "Non-goals" section
     - "Each capability in the Capabilities section MUST correspond to a product domain, not a feature within a domain. Use domain names (e.g., `execution`, `planning`) not domain-feature compounds (e.g., NOT `execution-loop`, `auth-login`, `user-auth`, `data-export`). Check `openspec/specs/` for existing domain names before inventing new ones."
+    - "MUST reference which ADRs in `architecture/` informed the proposal. If no relevant ADRs exist, state so explicitly."
   design:
     - MUST identify any user-facing documentation in `docs/` and root `README.md` that would need updating based on the proposed changes
     - If the design changes observable behavior, CLI commands, APIs, or concepts covered in `docs/`, the design MUST note which doc files need updating
