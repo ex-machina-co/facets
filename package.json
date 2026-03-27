@@ -10,13 +10,15 @@
   },
   "scripts": {
     "dev": "bun turbo build && bun run link",
+    "types": "tsc --noEmit",
     "check": "bun turbo check",
     "change": "changeset",
     "version-packages": "changeset version",
     "release": "bun run check && changeset publish",
     "link": "bun link --cwd packages/cli",
     "unlink": "bun unlink --cwd packages/cli",
-    "docs": "bun --cwd docs mint dev"
+    "docs": "bun --cwd docs mint dev",
+    "postinstall": "mise exec -- lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.4",

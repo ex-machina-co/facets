@@ -1,5 +1,6 @@
 .turbo/
 .strategy/
+lefthook-local.yml
 
 dist/
 docs/.mintlify/

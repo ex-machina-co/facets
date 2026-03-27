@@ -15,8 +15,9 @@
       "dependsOn": []
     },
     "check": {
-      "dependsOn": ["lint", "types", "test"]
-    }
+      "dependsOn": ["lint", "types", "test", "//#types"]
+    },
+    "//#types": {}
   },
   "ui": "tui"
 }

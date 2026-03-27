@@ -1,0 +1,12 @@
+pre-commit:
+  commands:
+    check-bun-version:
+      run: bun scripts/check-bun-version.ts
+    biome:
+      glob: "*.{ts,js,json}"
+      run: bunx biome check {staged_files}
+
+pre-push:
+  commands:
+    check:
+      run: bun check

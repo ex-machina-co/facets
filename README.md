@@ -17,15 +17,15 @@ Full documentation is available at [agentfacets.io](https://agentfacets.io).
 
 ### Prerequisites
 
-- [mise](https://mise.jdx.dev) — manages the correct Bun version automatically
+- [mise](https://mise.jdx.dev) — manages tooling (Bun, lefthook) via `mise.toml`
 
 ### Setup
 
 ```sh
-# Install the pinned Bun version
+# Install Bun + lefthook
 mise install
 
-# Install dependencies
+# Install dependencies + set up git hooks
 bun install
 
 # Run lint, typecheck, build, and tests
