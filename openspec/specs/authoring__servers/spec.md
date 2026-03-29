@@ -1,12 +1,12 @@
 ## Purpose
 
-A server author writes a `server.yaml` to declare their MCP server's identity, runtime, and entry point. The system validates and loads this manifest so authors get clear feedback when something is wrong, and downstream tools (local install, publish) get a reliable typed representation.
+A server author writes a server manifest to declare their MCP server's identity, runtime, and entry point. The system validates and loads this manifest so authors get clear feedback when something is wrong, and downstream tools (local install, publish) get a reliable typed representation.
 
 ## Requirements
 
 ### Requirement: Valid server manifests are accepted
 
-The system SHALL accept a `server.yaml` that conforms to the server manifest schema defined in ADR-005. A valid server manifest has a name, version, runtime, and entry point.
+The system SHALL accept a server manifest that conforms to the server manifest schema defined in ADR-005. A valid server manifest has a name, version, runtime, and entry point.
 
 #### Scenario: Minimal valid server manifest
 
@@ -20,7 +20,7 @@ The system SHALL accept a `server.yaml` that conforms to the server manifest sch
 
 ### Requirement: Invalid server manifests are rejected with actionable errors
 
-The system SHALL reject a `server.yaml` that does not conform to the server manifest schema. Each error SHALL identify the location of the problem and describe what was expected.
+The system SHALL reject a server manifest that does not conform to the server manifest schema. Each error SHALL identify the location of the problem and describe what was expected.
 
 #### Scenario: Missing required field
 
@@ -46,19 +46,19 @@ The system SHALL accept server manifests containing fields not defined in the cu
 
 ### Requirement: Server manifests are loaded from disk
 
-The system SHALL load a server manifest by reading `server.yaml` from a specified directory. YAML syntax errors and schema validation errors SHALL both be reported through a unified error interface.
+The system SHALL load a server manifest by reading the server manifest file from a specified directory. JSON syntax errors and schema validation errors SHALL both be reported through a unified error interface.
 
 #### Scenario: Successful load
 
-- **WHEN** a valid `server.yaml` exists in the specified directory
+- **WHEN** a valid server manifest exists in the specified directory
 - **THEN** the system SHALL return the validated server manifest data
 
 #### Scenario: File not found
 
-- **WHEN** no `server.yaml` exists in the specified directory
+- **WHEN** no server manifest exists in the specified directory
 - **THEN** the system SHALL return an error indicating the file was not found
 
-#### Scenario: Malformed YAML
+#### Scenario: Malformed JSON
 
-- **WHEN** the `server.yaml` contains invalid YAML syntax
+- **WHEN** the server manifest contains invalid JSON syntax
 - **THEN** the system SHALL return an error indicating a syntax problem

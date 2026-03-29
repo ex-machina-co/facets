@@ -33,15 +33,16 @@ describe('loadManifest', () => {
     const dir = await createFixtureDir('valid')
     await writeFixture(
       dir,
-      'facet.yaml',
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  code-review:
-    description: "Reviews code for issues"
-    prompt: "Review the code for common issues."
-`,
+      'facet.json',
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          'code-review': {
+            description: 'Reviews code for issues',
+          },
+        },
+      }),
     )
 
     const result = await loadManifest(dir)
@@ -50,7 +51,6 @@ skills:
       expect(result.data.name).toBe('test-facet')
       expect(result.data.version).toBe('1.0.0')
       expect(result.data.skills?.['code-review']?.description).toBe('Reviews code for issues')
-      expect(result.data.skills?.['code-review']?.prompt).toBe('Review the code for common issues.')
     }
   })
 
@@ -65,15 +65,15 @@ skills:
     }
   })
 
-  test('malformed YAML', async () => {
+  test('malformed JSON', async () => {
     const dir = await createFixtureDir('malformed')
-    await writeFixture(dir, 'facet.yaml', `name: [unterminated`)
+    await writeFixture(dir, 'facet.json', '{ "name": [unterminated')
 
     const result = await loadManifest(dir)
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.errors).toHaveLength(1)
-      expect(result.errors.at(0)?.message).toContain('YAML syntax error')
+      expect(result.errors.at(0)?.message).toContain('JSON syntax error')
     }
   })
 
@@ -81,21 +81,23 @@ skills:
     const dir = await createFixtureDir('schema-error')
     await writeFixture(
       dir,
-      'facet.yaml',
-      `
-name: test-facet
-version: "1.0.0"
-agents:
-  reviewer:
-    description: "No prompt"
-`,
+      'facet.json',
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        agents: {
+          reviewer: {
+            // missing required description
+          },
+        },
+      }),
     )
 
     const result = await loadManifest(dir)
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      const promptError = result.errors.find((e) => e.path.includes('prompt'))
-      expect(promptError).toBeDefined()
+      const descriptionError = result.errors.find((e) => e.path.includes('description'))
+      expect(descriptionError).toBeDefined()
     }
   })
 
@@ -103,13 +105,14 @@ agents:
     const dir = await createFixtureDir('no-text')
     await writeFixture(
       dir,
-      'facet.yaml',
-      `
-name: empty-facet
-version: "1.0.0"
-servers:
-  jira: "1.0.0"
-`,
+      'facet.json',
+      JSON.stringify({
+        name: 'empty-facet',
+        version: '1.0.0',
+        servers: {
+          jira: '1.0.0',
+        },
+      }),
     )
 
     const result = await loadManifest(dir)
@@ -123,38 +126,42 @@ servers:
     const dir = await createFixtureDir('full')
     await writeFixture(
       dir,
-      'facet.yaml',
-      `
-name: acme-dev
-version: "1.0.0"
-description: "Acme dev toolkit"
-author: acme-org
-skills:
-  code-standards:
-    description: "Org coding standards"
-    prompt: "Follow org coding standards."
-agents:
-  reviewer:
-    description: "Code reviewer"
-    prompt: "Review this code."
-commands:
-  review:
-    description: "Run review"
-    prompt: "Execute code review."
-facets:
-  - "base@1.0.0"
-servers:
-  jira: "1.0.0"
-  slack:
-    image: "ghcr.io/acme/slack-bot:v2"
-`,
+      'facet.json',
+      JSON.stringify({
+        name: 'acme-dev',
+        version: '1.0.0',
+        description: 'Acme dev toolkit',
+        author: 'acme-org',
+        skills: {
+          'code-standards': {
+            description: 'Org coding standards',
+          },
+        },
+        agents: {
+          reviewer: {
+            description: 'Code reviewer',
+          },
+        },
+        commands: {
+          review: {
+            description: 'Run review',
+          },
+        },
+        facets: ['base@1.0.0'],
+        servers: {
+          jira: '1.0.0',
+          slack: {
+            image: 'ghcr.io/acme/slack-bot:v2',
+          },
+        },
+      }),
     )
 
     const result = await loadManifest(dir)
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.data.name).toBe('acme-dev')
-      expect(result.data.agents?.reviewer?.prompt).toBe('Review this code.')
+      expect(result.data.agents?.reviewer?.description).toBe('Code reviewer')
       expect(result.data.servers?.slack).toEqual({
         image: 'ghcr.io/acme/slack-bot:v2',
       })
@@ -165,43 +172,44 @@ servers:
 // --- resolvePrompts ---
 
 describe('resolvePrompts', () => {
-  test('inline string prompts are used as-is', async () => {
+  test('prompt content is resolved from conventional file paths', async () => {
+    const dir = await createFixtureDir('resolve-convention')
+    await writeFixture(dir, 'skills/review.md', '# Code Review\nReview all code.')
+    await writeFixture(dir, 'agents/reviewer.md', '# Reviewer\nReview this code.')
+    await writeFixture(dir, 'commands/deploy.md', '# Deploy\nDeploy the code.')
+
     const manifest = {
       name: 'test',
       version: '1.0.0',
+      skills: {
+        review: { description: 'A review skill' },
+      },
       agents: {
-        reviewer: {
-          prompt: 'Review this code.' as const,
-        },
+        reviewer: { description: 'A reviewer agent' },
       },
       commands: {
-        review: {
-          prompt: 'Execute review.' as const,
-        },
+        deploy: { description: 'A deploy command' },
       },
     }
 
-    const result = await resolvePrompts(manifest, '/tmp')
+    const result = await resolvePrompts(manifest, dir)
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.data.agents?.reviewer?.prompt).toBe('Review this code.')
-      expect(result.data.commands?.review?.prompt).toBe('Execute review.')
+      expect(result.data.skills?.review?.prompt).toBe('# Code Review\nReview all code.')
+      expect(result.data.agents?.reviewer?.prompt).toBe('# Reviewer\nReview this code.')
+      expect(result.data.commands?.deploy?.prompt).toBe('# Deploy\nDeploy the code.')
     }
   })
 
-  test('file-based prompt is resolved', async () => {
+  test('file-based prompt is resolved from agents/<name>.md', async () => {
     const dir = await createFixtureDir('resolve-file')
-    const agentsDir = join(dir, 'agents')
-    await Bun.write(join(agentsDir, '.keep'), '')
-    await writeFixture(agentsDir, 'reviewer.md', '# Review\nCheck all code.')
+    await writeFixture(dir, 'agents/reviewer.md', '# Review\nCheck all code.')
 
     const manifest = {
       name: 'test',
       version: '1.0.0',
       agents: {
-        reviewer: {
-          prompt: { file: 'agents/reviewer.md' },
-        },
+        reviewer: { description: 'A reviewer' },
       },
     }
 
@@ -212,16 +220,14 @@ describe('resolvePrompts', () => {
     }
   })
 
-  test('missing prompt file reports error with agent name', async () => {
+  test('missing prompt file reports error with asset name', async () => {
     const dir = await createFixtureDir('resolve-missing')
 
     const manifest = {
       name: 'test',
       version: '1.0.0',
       agents: {
-        reviewer: {
-          prompt: { file: 'agents/nonexistent.md' },
-        },
+        reviewer: { description: 'A reviewer' },
       },
     }
 
@@ -229,28 +235,30 @@ describe('resolvePrompts', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.errors).toHaveLength(1)
-      expect(result.errors.at(0)?.path).toBe('agents.reviewer.prompt')
-      expect(result.errors.at(0)?.message).toContain('nonexistent.md')
+      expect(result.errors.at(0)?.path).toBe('agents.reviewer')
+      expect(result.errors.at(0)?.message).toContain('agents/reviewer.md')
     }
   })
 
   test('manifest without agents or commands resolves successfully', async () => {
+    const dir = await createFixtureDir('resolve-skills-only')
+    await writeFixture(dir, 'skills/x.md', '# Skill X\nDo x.')
+
     const manifest = {
       name: 'test',
       version: '1.0.0',
       skills: {
         x: {
           description: 'A skill',
-          prompt: 'Do x' as const,
         },
       },
     }
 
-    const result = await resolvePrompts(manifest, '/tmp')
+    const result = await resolvePrompts(manifest, dir)
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.data.name).toBe('test')
-      expect(result.data.skills?.x?.prompt).toBe('Do x')
+      expect(result.data.skills?.x?.prompt).toBe('# Skill X\nDo x.')
     }
   })
 })

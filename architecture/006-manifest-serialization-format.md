@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-03-28
 decision-makers: julian
 ---
@@ -11,18 +11,17 @@ decision-makers: julian
 | status   | date       | decision-makers | github |
 | -------- | ---------- | --------------- | ------ |
 | proposed | 2026-03-28 | julian          |        |
+| accepted | 2026-03-29 | julian          |        |
 
 ## Context and Problem Statement
 
-The facet manifest defines what a facet contains — its identity, text assets, composed facets, and server references. ADR-001 defines the manifest schema (fields, types, constraints, semantics). This ADR decides the serialization format for that schema.
+The facets system has several manifest types: the facet manifest (ADR-001), the server manifest (ADR-005), the build manifest (ADR-004), and the lockfile (ADR-003). All are machine-managed — the CLI creates and mutates them, authors edit `.md` content files rather than manifests directly. This ADR decides the serialization format for all project manifests.
 
-The CLI manages all manifest mutations — authors edit `.md` content files, not the manifest directly. The format choice should optimize for machine reliability over human authoring ergonomics.
-
-The integrity model (ADR-004) introduces content hashing of build artifacts. Deterministic serialization simplifies hash computation and verification.
+The format choice should optimize for machine reliability over human authoring ergonomics. The integrity model (ADR-004) introduces content hashing of build artifacts. Deterministic serialization simplifies hash computation and verification.
 
 ## Decision Drivers
 
-* **Machine authoring is the primary path.** The CLI scaffolds manifests (`facet create`) and will manage ongoing mutations (interactive build reconciliation). Authors edit `.md` content files, not the manifest. Format ergonomics for hand-editing are secondary to machine reliability.
+* **Machine authoring is the primary path.** The CLI scaffolds and manages all manifests. Authors edit `.md` content files, not manifests directly. Format ergonomics for hand-editing are secondary to machine reliability.
 * **Deterministic serialization.** Content hashing requires that the same logical manifest produces the same bytes. `JSON.stringify` with sorted keys is trivially deterministic. YAML serializers do not guarantee stable output — key ordering, quoting style, and whitespace vary across serializers and versions.
 * **Parsing reliability.** The manifest is a contract — ambiguous parsing is unacceptable. YAML has implicit type coercion (`1.0.0` → number `1`, `no` → boolean `false`, `on` → boolean `true`) that creates subtle bugs. JSON has zero parsing ambiguity.
 * **Dependency minimization.** Fewer runtime dependencies reduce supply chain risk and build complexity. `JSON.parse` is built into every JavaScript runtime. YAML requires a third-party parser package.
@@ -39,9 +38,16 @@ The integrity model (ADR-004) introduces content hashing of build artifacts. Det
 
 Chosen option: **JSON**, because it is the only format that scores well on all four decision drivers: zero parsing ambiguity, trivially deterministic serialization, zero runtime dependencies, and universal tooling support.
 
-The manifest filename changes from `facet.yaml` to `facet.json`. The schema defined in ADR-001 is unchanged — only the serialization format changes.
+All project manifests use JSON:
 
-ADR-001 will be modified to note that the manifest schema is format-agnostic and the serialization format is governed by this ADR.
+| Manifest        | Filename               | Schema ADR |
+| --------------- | ---------------------- | ---------- |
+| Facet manifest  | `facet.json`           | ADR-001    |
+| Server manifest | `server.json`          | ADR-005    |
+| Build manifest  | `build-manifest.json`  | ADR-004    |
+| Lockfile        | `facets.lock`          | ADR-003    |
+
+The manifest schemas defined in their respective ADRs are format-agnostic — they define structure, not serialization. This ADR governs serialization for all of them.
 
 ### Consequences
 
@@ -55,9 +61,11 @@ ADR-001 will be modified to note that the manifest schema is format-agnostic and
 
 ### Confirmation
 
-- The manifest loader reads `facet.json` via `JSON.parse()`
+- All manifest loaders read `.json` files via `JSON.parse()`
 - The scaffold generator writes `facet.json` via `JSON.stringify()`
+- The build pipeline writes `build-manifest.json` via `JSON.stringify()`
 - All tests pass with JSON manifest fixtures
+- The `yaml` runtime dependency is removed
 
 ## Pros and Cons of the Options
 
@@ -122,7 +130,6 @@ Configuration format designed for readability. Used by Rust (`Cargo.toml`), Pyth
 
 ## More Information
 
-* ADR-001 (Facet Manifest Schema) defines the schema; this ADR governs the serialization format
+* ADR-001 (Facet Manifest Schema), ADR-005 (Server Manifest), ADR-003 (Lockfile), and ADR-004 (Build Manifest) define schemas; this ADR governs the serialization format for all of them
 * The archive format (`.facet` files produced by `facet build`) contains `facet.json`
-* The build manifest (`build-manifest.json`) is also JSON
-* The lockfile format (`facets.lock`) is a separate concern not addressed by this ADR
+* The lockfile filename is `facets.lock` (format-agnostic name, like `Cargo.lock`) with JSON content

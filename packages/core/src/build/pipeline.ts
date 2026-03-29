@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { loadManifest, type ResolvedFacetManifest, resolvePrompts } from '../loaders/facet.ts'
+import { FACET_MANIFEST_FILE, loadManifest, type ResolvedFacetManifest, resolvePrompts } from '../loaders/facet.ts'
 import type { ValidationError } from '../types.ts'
 import {
   assembleTar,
@@ -11,8 +11,6 @@ import {
 import { detectNamingCollisions } from './detect-collisions.ts'
 import { validateCompactFacets } from './validate-facets.ts'
 import { validatePlatformConfigs } from './validate-platforms.ts'
-
-const MANIFEST_FILE = 'facet.yaml'
 
 export interface BuildProgress {
   stage: string
@@ -37,8 +35,8 @@ export interface BuildFailure {
 
 /**
  * Runs the full build pipeline:
- * 1. Load manifest — read facet.yaml, parse YAML, validate schema, check constraints
- * 2. Resolve prompts — read file-based prompts for skills, agents, commands (also verifies files exist)
+ * 1. Load manifest — read the facet manifest, parse JSON, validate schema, check constraints
+ * 2. Resolve prompts — read prompt files at conventional paths for skills, agents, commands (also verifies files exist)
  * 3. Validate compact facets format — check name@version pattern
  * 4. Detect naming collisions — fail if same name used within an asset type
  * 5. Validate platform config — check known platform schemas, warn on unknown
@@ -100,7 +98,7 @@ export async function runBuildPipeline(
   onProgress?.({ stage: 'Assembling archive', status: 'running' })
 
   const resolved = resolveResult.data
-  const manifestContent = await Bun.file(join(rootDir, MANIFEST_FILE)).text()
+  const manifestContent = await Bun.file(join(rootDir, FACET_MANIFEST_FILE)).text()
   const entries = collectArchiveEntries(resolved, manifestContent)
   const assetHashes = computeAssetHashes(entries)
   const tarBytes = assembleTar(entries)

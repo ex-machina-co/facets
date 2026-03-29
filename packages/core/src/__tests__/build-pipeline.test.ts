@@ -74,7 +74,7 @@ describe('validateCompactFacets', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: { x: { description: 'A skill', prompt: 'Do x' } },
+      skills: { x: { description: 'A skill' } },
     } as FacetManifest
     const errors = validateCompactFacets(manifest)
     expect(errors).toHaveLength(0)
@@ -88,9 +88,9 @@ describe('detectNamingCollisions', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: { review: { description: 'Review skill', prompt: 'Do review' } },
-      agents: { helper: { prompt: 'Help' } },
-      commands: { deploy: { prompt: 'Deploy' } },
+      skills: { review: { description: 'Review skill' } },
+      agents: { helper: { description: 'Helper agent' } },
+      commands: { deploy: { description: 'Deploy command' } },
     } as FacetManifest
     const errors = detectNamingCollisions(manifest)
     expect(errors).toHaveLength(0)
@@ -100,8 +100,8 @@ describe('detectNamingCollisions', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: { review: { description: 'Review skill', prompt: 'Do review' } },
-      commands: { review: { prompt: 'Run review' } },
+      skills: { review: { description: 'Review skill' } },
+      commands: { review: { description: 'Run review' } },
     } as FacetManifest
     const errors = detectNamingCollisions(manifest)
     expect(errors).toHaveLength(0)
@@ -111,8 +111,8 @@ describe('detectNamingCollisions', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: { helper: { description: 'Helper skill', prompt: 'Help' } },
-      agents: { helper: { prompt: 'Help' } },
+      skills: { helper: { description: 'Helper skill' } },
+      agents: { helper: { description: 'Helper agent' } },
     } as FacetManifest
     const errors = detectNamingCollisions(manifest)
     expect(errors).toHaveLength(0)
@@ -122,9 +122,9 @@ describe('detectNamingCollisions', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: { deploy: { description: 'Deploy skill', prompt: 'Deploy' } },
-      agents: { deploy: { prompt: 'Deploy' } },
-      commands: { deploy: { prompt: 'Deploy' } },
+      skills: { deploy: { description: 'Deploy skill' } },
+      agents: { deploy: { description: 'Deploy agent' } },
+      commands: { deploy: { description: 'Deploy command' } },
     } as FacetManifest
     const errors = detectNamingCollisions(manifest)
     expect(errors).toHaveLength(0)
@@ -140,7 +140,7 @@ describe('validatePlatformConfigs', () => {
       version: '1.0.0',
       agents: {
         reviewer: {
-          prompt: 'Review',
+          description: 'Reviewer agent',
           platforms: {
             opencode: { tools: { grep: true, bash: true } },
           },
@@ -159,7 +159,6 @@ describe('validatePlatformConfigs', () => {
       skills: {
         review: {
           description: 'Review skill',
-          prompt: 'Do review',
           platforms: {
             'unknown-platform': { foo: 'bar' },
           },
@@ -178,7 +177,7 @@ describe('validatePlatformConfigs', () => {
       version: '1.0.0',
       agents: {
         reviewer: {
-          prompt: 'Review',
+          description: 'Reviewer agent',
           platforms: {
             opencode: { tools: 'not-a-record' },
           },
@@ -194,7 +193,7 @@ describe('validatePlatformConfigs', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
-      skills: { x: { description: 'A skill', prompt: 'Do x' } },
+      skills: { x: { description: 'A skill' } },
     } as FacetManifest
     const result = validatePlatformConfigs(manifest)
     expect(result.errors).toHaveLength(0)
@@ -209,15 +208,16 @@ describe('runBuildPipeline', () => {
     const dir = await createFixtureDir('valid-build')
     await Bun.write(join(dir, 'skills/example.md'), '# Example skill')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  example:
-    description: "An example skill"
-    prompt: { file: skills/example.md }
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          example: {
+            description: 'An example skill',
+          },
+        },
+      }),
     )
 
     const result = await runBuildPipeline(dir)
@@ -229,7 +229,7 @@ skills:
       // Content hashing fields
       expect(result.archiveFilename).toBe('test-facet-1.0.0.facet')
       expect(result.archiveBytes.length).toBeGreaterThan(0)
-      expect(Object.keys(result.assetHashes)).toContain('facet.yaml')
+      expect(Object.keys(result.assetHashes)).toContain('facet.json')
       expect(Object.keys(result.assetHashes)).toContain('skills/example.md')
       expect(result.assetHashes['skills/example.md']).toMatchInlineSnapshot(
         `"sha256:ded8057927e03783371d0d929e4a6e92da66eb9dd164377ad6845a5a1c0cb5ba"`,
@@ -247,22 +247,23 @@ skills:
   test('build fails on missing asset file', async () => {
     const dir = await createFixtureDir('missing-file')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  example:
-    description: "An example skill"
-    prompt: { file: skills/nonexistent.md }
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          example: {
+            description: 'An example skill',
+          },
+        },
+      }),
     )
 
     const result = await runBuildPipeline(dir)
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.errors[0]?.path).toBe('skills.example.prompt')
-      expect(result.errors[0]?.message).toContain('nonexistent.md')
+      expect(result.errors[0]?.path).toBe('skills.example')
+      expect(result.errors[0]?.message).toContain('skills/example.md')
     }
   })
 
@@ -271,19 +272,17 @@ skills:
     await Bun.write(join(dir, 'skills/review.md'), '# Review skill')
     await Bun.write(join(dir, 'commands/review.md'), '# Review command')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  review:
-    description: "A review skill"
-    prompt: { file: skills/review.md }
-commands:
-  review:
-    description: "A review command"
-    prompt: { file: commands/review.md }
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          review: { description: 'A review skill' },
+        },
+        commands: {
+          review: { description: 'A review command' },
+        },
+      }),
     )
 
     const result = await runBuildPipeline(dir)
@@ -297,26 +296,21 @@ commands:
     await Bun.write(join(dir, 'agents/helper.md'), '# Helper agent')
     await Bun.write(join(dir, 'commands/deploy.md'), '# Deploy command')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: multi-facet
-version: "2.0.0"
-skills:
-  alpha:
-    description: "Alpha skill"
-    prompt: { file: skills/alpha.md }
-  beta:
-    description: "Beta skill"
-    prompt: { file: skills/beta.md }
-agents:
-  helper:
-    description: "Helper agent"
-    prompt: { file: agents/helper.md }
-commands:
-  deploy:
-    description: "Deploy command"
-    prompt: { file: commands/deploy.md }
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'multi-facet',
+        version: '2.0.0',
+        skills: {
+          alpha: { description: 'Alpha skill' },
+          beta: { description: 'Beta skill' },
+        },
+        agents: {
+          helper: { description: 'Helper agent' },
+        },
+        commands: {
+          deploy: { description: 'Deploy command' },
+        },
+      }),
     )
 
     const result = await runBuildPipeline(dir)
@@ -327,7 +321,7 @@ commands:
       expect(assetPaths).toEqual([
         'agents/helper.md',
         'commands/deploy.md',
-        'facet.yaml',
+        'facet.json',
         'skills/alpha.md',
         'skills/beta.md',
       ])
@@ -338,17 +332,15 @@ commands:
     const dir = await createFixtureDir('bad-facets')
     await Bun.write(join(dir, 'skills/x.md'), '# Skill')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  x:
-    description: "A skill"
-    prompt: { file: skills/x.md }
-facets:
-  - "no-version-here"
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          x: { description: 'A skill' },
+        },
+        facets: ['no-version-here'],
+      }),
     )
 
     const result = await runBuildPipeline(dir)
@@ -366,8 +358,14 @@ describe('writeBuildOutput', () => {
     const dir = await createFixtureDir('write-output')
     await Bun.write(join(dir, 'skills/example.md'), '# Resolved content')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `name: test-facet\nversion: "1.0.0"\nskills:\n  example:\n    description: "A skill"\n    prompt: { file: skills/example.md }\n`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          example: { description: 'A skill' },
+        },
+      }),
     )
 
     const result = await runBuildPipeline(dir)
@@ -386,15 +384,11 @@ describe('writeBuildOutput', () => {
     expect(manifest.facetVersion).toBe(1)
     expect(manifest.archive).toBe('test-facet-1.0.0.facet')
     expect(manifest.integrity).toMatch(/^sha256:[a-f0-9]{64}$/)
-    expect(manifest.assets['facet.yaml']).toMatchInlineSnapshot(
-      `"sha256:d78685f84728435106062cef151c723b462e2cc3934198afeb9b55251cfaa334"`,
-    )
-    expect(manifest.assets['skills/example.md']).toMatchInlineSnapshot(
-      `"sha256:248fb2d514c77ac31eea64a09399adbabcfa05c16afce7292ea1165bd83fe3bc"`,
-    )
+    expect(manifest.assets['facet.json']).toMatch(/^sha256:[a-f0-9]{64}$/)
+    expect(manifest.assets['skills/example.md']).toMatch(/^sha256:[a-f0-9]{64}$/)
 
     // No loose files
-    const looseManifest = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
+    const looseManifest = await Bun.file(join(dir, 'dist/facet.json')).exists()
     expect(looseManifest).toBe(false)
   })
 
@@ -402,8 +396,14 @@ describe('writeBuildOutput', () => {
     const dir = await createFixtureDir('clean-dist')
     await Bun.write(join(dir, 'skills/x.md'), '# Skill')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `name: test\nversion: "1.0.0"\nskills:\n  x:\n    description: "A skill"\n    prompt: { file: skills/x.md }\n`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+        skills: {
+          x: { description: 'A skill' },
+        },
+      }),
     )
     // Write a stale file in dist/
     await Bun.write(join(dir, 'dist/stale.txt'), 'stale')

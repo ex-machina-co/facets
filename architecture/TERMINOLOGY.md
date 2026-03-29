@@ -6,7 +6,7 @@ Canonical terms for the Facets ecosystem. All SDRs and ADRs (Facets OSS and Face
 
 | Term             | Definition                                                                                                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Facet**        | The manifest (`facet.yaml`) + raw authored content. What the author creates locally, and what gets extracted and loaded after install. Bookends the authoring and consumption sides of the lifecycle. |
+| **Facet**        | The facet manifest + raw authored content. What the author creates locally, and what gets extracted and loaded after install. Bookends the authoring and consumption sides of the lifecycle. |
 | **Bundle**       | The published, self-contained unit stored in the registry. Contains the manifest, all artifacts (local and composed), and integrity hashes. The transport form between publish and install. |
 | **Artifact**     | A discrete unit of content within a bundle — a skill, an agent prompt, a command prompt, or an MCP server reference. Artifacts can be locally authored or composed from other facets. |
 | **MCP server**   | An artifact type containing code (not text). Published independently from facets, versioned independently, resolved at install time. Two execution modes: source-mode and ref-mode. Use "servers" as shorthand after first use in a document. |

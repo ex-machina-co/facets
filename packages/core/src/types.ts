@@ -1,6 +1,6 @@
 /**
  * A structured validation error decoupled from ArkType internals.
- * Used by all loaders to report schema and YAML parsing failures.
+ * Used by all loaders to report schema and parsing failures.
  */
 export interface ValidationError {
   /** Dot-separated path to the invalid field (e.g., "agents.reviewer.prompt") */

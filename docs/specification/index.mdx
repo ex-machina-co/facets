@@ -13,7 +13,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ### Facets
 
-A facet is a named, versioned collection of text assets — skills, agents, and commands — defined by a manifest (`facet.yaml`). Facets MAY compose text from other facets and MAY reference MCP servers.
+A facet is a named, versioned collection of text assets — skills, agents, and commands — defined by a facet manifest. Facets MAY compose text from other facets and MAY reference MCP servers.
 
 When a facet is published, the registry assembles a **facet archive** — a self-contained artifact containing the manifest and all text assets (both locally authored and composed). The archive is the unit of distribution between the registry and consumers.
 
@@ -67,7 +67,7 @@ Facets enable arbitrary text injection into AI assistant contexts and arbitrary 
     Actors, lifecycle, artifact types, and design principles.
   </Card>
   <Card title="Manifest Schema" href="/specification/manifest">
-    The facet.yaml format — fields, types, and constraints.
+    The facet manifest format — fields, types, and constraints.
   </Card>
   <Card title="Publish Flow" href="/specification/publish">
     How facets are built and published to the registry.

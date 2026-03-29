@@ -1,5 +1,4 @@
 import type { type } from 'arktype'
-import { parse, YAMLParseError } from 'yaml'
 import type { ValidationError } from '../types.ts'
 
 /**
@@ -16,37 +15,22 @@ export function mapArkErrors(errors: InstanceType<typeof type.errors>): Validati
 }
 
 /**
- * Parses a YAML string. Returns the parsed data or a ValidationError array.
+ * Parses a JSON string. Returns the parsed data or a ValidationError array.
  */
-export function parseYaml(yamlContent: string): { ok: true; data: unknown } | { ok: false; errors: ValidationError[] } {
+export function parseJson(jsonContent: string): { ok: true; data: unknown } | { ok: false; errors: ValidationError[] } {
   try {
-    const parsed = parse(yamlContent)
+    const parsed = JSON.parse(jsonContent)
     return { ok: true, data: parsed }
   } catch (err) {
-    if (err instanceof YAMLParseError) {
-      const pos = err.linePos?.[0]
-      const location = pos ? ` at line ${pos.line}, column ${pos.col}` : ''
-      return {
-        ok: false,
-        errors: [
-          {
-            path: '',
-            message: `YAML syntax error${location}: ${err.message}`,
-            expected: 'valid YAML',
-            actual: 'malformed YAML',
-          },
-        ],
-      }
-    }
-    const message = err instanceof Error ? err.message : 'Unknown YAML parse error'
+    const message = err instanceof SyntaxError ? err.message : 'Unknown JSON parse error'
     return {
       ok: false,
       errors: [
         {
           path: '',
-          message: `YAML syntax error: ${message}`,
-          expected: 'valid YAML',
-          actual: 'malformed YAML',
+          message: `JSON syntax error: ${message}`,
+          expected: 'valid JSON',
+          actual: 'malformed JSON',
         },
       ],
     }

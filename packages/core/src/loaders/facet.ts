@@ -2,14 +2,14 @@ import { join } from 'node:path'
 import { type } from 'arktype'
 import { checkFacetManifestConstraints, type FacetManifest, FacetManifestSchema } from '../schemas/facet-manifest.ts'
 import type { Result, ValidationError } from '../types.ts'
-import { mapArkErrors, parseYaml, readFile } from './validate.ts'
+import { mapArkErrors, parseJson, readFile } from './validate.ts'
 
-const FACET_MANIFEST_FILE = 'facet.yaml'
+export const FACET_MANIFEST_FILE = 'facet.json'
 
 /**
  * Loads and validates a facet manifest from the specified directory.
  *
- * Reads `facet.yaml`, parses YAML, validates against the schema, and checks
+ * Reads the facet manifest, parses JSON, validates against the schema, and checks
  * business-rule constraints. Returns a discriminated result — either the
  * validated manifest or structured errors.
  */
@@ -22,14 +22,14 @@ export async function loadManifest(dir: string): Promise<Result<FacetManifest>> 
     return fileResult
   }
 
-  // Phase 1: Parse YAML
-  const yamlResult = parseYaml(fileResult.content)
-  if (!yamlResult.ok) {
-    return yamlResult
+  // Phase 1: Parse JSON
+  const jsonResult = parseJson(fileResult.content)
+  if (!jsonResult.ok) {
+    return jsonResult
   }
 
   // Phase 2: Schema validation
-  const validated = FacetManifestSchema(yamlResult.data)
+  const validated = FacetManifestSchema(jsonResult.data)
   if (validated instanceof type.errors) {
     return { ok: false, errors: mapArkErrors(validated) }
   }
@@ -45,7 +45,7 @@ export async function loadManifest(dir: string): Promise<Result<FacetManifest>> 
 
 /**
  * A manifest with all prompts resolved to their string content.
- * File references have been read and replaced with file contents.
+ * File paths are derived from convention: `<type>/<name>.md`.
  */
 export interface ResolvedFacetManifest {
   name: string
@@ -63,7 +63,7 @@ export interface ResolvedFacetManifest {
   agents?: Record<
     string,
     {
-      description?: string
+      description: string
       prompt: string
       platforms?: Record<string, unknown>
     }
@@ -71,7 +71,7 @@ export interface ResolvedFacetManifest {
   commands?: Record<
     string,
     {
-      description?: string
+      description: string
       prompt: string
     }
   >
@@ -80,14 +80,15 @@ export interface ResolvedFacetManifest {
 }
 
 /**
- * Resolves all prompt fields in skills, agents, and commands to their string content.
+ * Resolves prompt content for all skills, agents, and commands by reading
+ * files at conventional paths relative to the facet root directory.
  *
- * - Inline strings are used as-is.
- * - File references (`{file: path}`) are read relative to the root directory.
+ * The convention is `<type>/<name>.md` — for example, a skill named
+ * "code-review" resolves to `skills/code-review.md`.
  *
  * This also serves as file existence verification for all three asset types —
- * if a referenced file doesn't exist, resolution fails with an error identifying
- * the asset and the missing file.
+ * if an expected file doesn't exist, resolution fails with an error identifying
+ * the asset and the expected file path.
  *
  * Returns a new manifest with all prompts resolved to strings, or an error
  * result identifying which prompt failed and why.
@@ -95,12 +96,12 @@ export interface ResolvedFacetManifest {
 export async function resolvePrompts(manifest: FacetManifest, rootDir: string): Promise<Result<ResolvedFacetManifest>> {
   const errors: ValidationError[] = []
 
-  // Resolve skill prompts
+  // Resolve skill prompts from skills/<name>.md
   let resolvedSkills: ResolvedFacetManifest['skills'] | undefined
   if (manifest.skills) {
     resolvedSkills = {}
     for (const [name, skill] of Object.entries(manifest.skills)) {
-      const resolvedPrompt = await resolvePrompt(skill.prompt, rootDir, `skills.${name}.prompt`)
+      const resolvedPrompt = await resolveAssetPrompt('skills', name, rootDir)
       if (typeof resolvedPrompt === 'string') {
         resolvedSkills[name] = { ...skill, prompt: resolvedPrompt }
       } else {
@@ -109,12 +110,12 @@ export async function resolvePrompts(manifest: FacetManifest, rootDir: string): 
     }
   }
 
-  // Resolve agent prompts
+  // Resolve agent prompts from agents/<name>.md
   let resolvedAgents: ResolvedFacetManifest['agents'] | undefined
   if (manifest.agents) {
     resolvedAgents = {}
     for (const [name, agent] of Object.entries(manifest.agents)) {
-      const resolvedPrompt = await resolvePrompt(agent.prompt, rootDir, `agents.${name}.prompt`)
+      const resolvedPrompt = await resolveAssetPrompt('agents', name, rootDir)
       if (typeof resolvedPrompt === 'string') {
         resolvedAgents[name] = { ...agent, prompt: resolvedPrompt }
       } else {
@@ -123,12 +124,12 @@ export async function resolvePrompts(manifest: FacetManifest, rootDir: string): 
     }
   }
 
-  // Resolve command prompts
+  // Resolve command prompts from commands/<name>.md
   let resolvedCommands: ResolvedFacetManifest['commands'] | undefined
   if (manifest.commands) {
     resolvedCommands = {}
     for (const [name, command] of Object.entries(manifest.commands)) {
-      const resolvedPrompt = await resolvePrompt(command.prompt, rootDir, `commands.${name}.prompt`)
+      const resolvedPrompt = await resolveAssetPrompt('commands', name, rootDir)
       if (typeof resolvedPrompt === 'string') {
         resolvedCommands[name] = { ...command, prompt: resolvedPrompt }
       } else {
@@ -157,26 +158,19 @@ export async function resolvePrompts(manifest: FacetManifest, rootDir: string): 
 }
 
 /**
- * Resolves a single prompt value to a string.
- * Returns the resolved string content, or a ValidationError if resolution fails.
+ * Resolves prompt content for a single asset by reading <type>/<name>.md.
+ * Returns the file content as a string, or a ValidationError if the file doesn't exist.
  */
-async function resolvePrompt(
-  prompt: string | { file: string },
-  rootDir: string,
-  fieldPath: string,
-): Promise<string | ValidationError> {
-  if (typeof prompt === 'string') {
-    return prompt
-  }
-
-  const filePath = join(rootDir, prompt.file)
+async function resolveAssetPrompt(assetType: string, name: string, rootDir: string): Promise<string | ValidationError> {
+  const relativePath = `${assetType}/${name}.md`
+  const filePath = join(rootDir, relativePath)
   const file = Bun.file(filePath)
   const exists = await file.exists()
 
   if (!exists) {
     return {
-      path: fieldPath,
-      message: `Prompt file not found: ${prompt.file} (resolved to ${filePath})`,
+      path: `${assetType}.${name}`,
+      message: `Prompt file not found: ${relativePath} (resolved to ${filePath})`,
       expected: 'file to exist',
       actual: 'file not found',
     }

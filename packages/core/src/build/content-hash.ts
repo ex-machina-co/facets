@@ -1,7 +1,5 @@
 import { createTar, type TarFileInput } from 'nanotar'
-import type { ResolvedFacetManifest } from '../loaders/facet.ts'
-
-const MANIFEST_FILE = 'facet.yaml'
+import { FACET_MANIFEST_FILE, type ResolvedFacetManifest } from '../loaders/facet.ts'
 
 export interface ArchiveEntry {
   path: string
@@ -25,7 +23,7 @@ export function computeContentHash(content: string | Uint8Array): string {
  * is a parsed object — we need the original file content for the archive.
  */
 export function collectArchiveEntries(resolved: ResolvedFacetManifest, manifestContent: string): ArchiveEntry[] {
-  const entries: ArchiveEntry[] = [{ path: MANIFEST_FILE, content: manifestContent }]
+  const entries: ArchiveEntry[] = [{ path: FACET_MANIFEST_FILE, content: manifestContent }]
 
   if (resolved.skills) {
     for (const [name, skill] of Object.entries(resolved.skills)) {

@@ -1,21 +1,21 @@
 ## Purpose
 
-A facet author writes a `facet.yaml` to declare their facet's identity, text assets, composed facets, and server references. The system validates and loads this manifest so authors get fast, clear feedback when something is wrong, and downstream tools get a reliable typed representation of the manifest.
+A facet author writes a facet manifest to declare their facet's identity, text assets, composed facets, and server references. The system validates and loads this manifest so authors get fast, clear feedback when something is wrong, and downstream tools get a reliable typed representation of the manifest.
 
 ## Requirements
 
 ### Requirement: Valid facet manifests are accepted
 
-The system SHALL accept a `facet.yaml` that conforms to the manifest schema. A valid manifest has a name, a version, and at least one text asset (skills, agents, commands, or composed facets). All three text asset types — skills, agents, and commands — use the same descriptor model: a map of asset name to a descriptor with a prompt reference and optional metadata. Skill descriptors SHALL require a description — consumers need to know what a skill does to decide whether to use it.
+The system SHALL accept a facet manifest that conforms to the manifest schema. A valid manifest has a name, a version, and at least one text asset (skills, agents, commands, or composed facets). All three text asset types — skills, agents, and commands — use the same descriptor model: a map of asset name to a descriptor with a required description and optional platform metadata. Descriptors SHALL NOT contain prompt references — prompt content is inferred from the file-path convention `<type>/<name>.md`. All three descriptor types SHALL require a `description` field.
 
 #### Scenario: Minimal valid manifest with a skill
 
-- **WHEN** an author provides a manifest with a name, version, and a single skill descriptor that includes a description and prompt reference
+- **WHEN** an author provides a manifest with a name, version, and a single skill descriptor that includes a description
 - **THEN** the system SHALL accept the manifest
 
 #### Scenario: Manifest with all sections
 
-- **WHEN** an author provides a manifest with identity fields, skill descriptors with prompts, agent descriptors with prompts, command descriptors with prompts, composed facets, and server references
+- **WHEN** an author provides a manifest with identity fields, skill descriptors with descriptions, agent descriptors with descriptions, command descriptors with descriptions, composed facets, and server references
 - **THEN** the system SHALL accept the manifest
 
 #### Scenario: Manifest with only composed facets is valid
@@ -25,7 +25,7 @@ The system SHALL accept a `facet.yaml` that conforms to the manifest schema. A v
 
 ### Requirement: Invalid facet manifests are rejected with actionable errors
 
-The system SHALL reject a `facet.yaml` that does not conform to the manifest schema. Each error SHALL identify the location of the problem (field path) and describe what was expected, so the author can fix it without guessing.
+The system SHALL reject a facet manifest that does not conform to the manifest schema. Each error SHALL identify the location of the problem (field path) and describe what was expected, so the author can fix it without guessing.
 
 #### Scenario: Missing required identity field
 
@@ -39,9 +39,9 @@ The system SHALL reject a `facet.yaml` that does not conform to the manifest sch
 - **THEN** the system SHALL reject the manifest
 - **AND** the error SHALL indicate that at least one text asset is required
 
-#### Scenario: Agent missing its prompt
+#### Scenario: Agent missing its description
 
-- **WHEN** an author defines an agent without a `prompt` field
+- **WHEN** an author defines an agent without a `description` field
 - **THEN** the system SHALL reject the manifest
 - **AND** the error SHALL identify the agent by name and the missing field
 
@@ -75,36 +75,41 @@ The system SHALL accept manifests containing fields not defined in the current s
 
 ### Requirement: Facet manifests are loaded from disk
 
-The system SHALL load a facet manifest by reading `facet.yaml` from a specified directory. YAML syntax errors and schema validation errors SHALL both be reported through a unified error interface so callers handle one error shape regardless of failure stage.
+The system SHALL load a facet manifest by reading the facet manifest file from a specified directory. JSON syntax errors and schema validation errors SHALL both be reported through a unified error interface so callers handle one error shape regardless of failure stage.
 
 #### Scenario: Successful load
 
-- **WHEN** a valid `facet.yaml` exists in the specified directory
+- **WHEN** a valid facet manifest exists in the specified directory
 - **THEN** the system SHALL return the validated manifest data
 
 #### Scenario: File not found
 
-- **WHEN** no `facet.yaml` exists in the specified directory
+- **WHEN** no facet manifest exists in the specified directory
 - **THEN** the system SHALL return an error indicating the file was not found
 
-#### Scenario: Malformed YAML
+#### Scenario: Malformed JSON
 
-- **WHEN** the `facet.yaml` contains invalid YAML syntax
+- **WHEN** the facet manifest contains invalid JSON syntax
 - **THEN** the system SHALL return an error indicating a syntax problem
 
-### Requirement: Prompt references are resolved to content
+### Requirement: Prompt content is resolved from conventional file paths
 
-After validation, the system SHALL resolve all prompt fields in skills, agents, and commands to their string content. Inline strings are used as-is. File-based prompt references are read relative to the facet root directory. Resolution failures SHALL identify which asset's prompt failed and why.
+After validation, the system SHALL resolve prompt content for all skills, agents, and commands by reading files at conventional paths relative to the facet root directory. The convention SHALL be `<type>/<name>.md` — for example, a skill named "code-review" resolves to `skills/code-review.md`. Resolution failures SHALL identify which asset failed and the expected file path.
 
-#### Scenario: File-based prompt is resolved
+#### Scenario: Prompt file exists at conventional path
 
-- **WHEN** an asset's prompt references an external file and that file exists
-- **THEN** the system SHALL resolve the prompt to the file's content
+- **WHEN** a skill named "code-review" is declared in the manifest and `skills/code-review.md` exists
+- **THEN** the system SHALL resolve the skill's prompt to the file's content
 
-#### Scenario: Missing file reports an error
+#### Scenario: Prompt file missing at conventional path
 
-- **WHEN** an asset's prompt references a file that does not exist
-- **THEN** the system SHALL return an error identifying the asset and the missing file
+- **WHEN** a skill named "code-review" is declared in the manifest and `skills/code-review.md` does not exist
+- **THEN** the system SHALL return an error identifying the skill and the expected file path `skills/code-review.md`
+
+#### Scenario: Convention applies to all asset types
+
+- **WHEN** the manifest declares a skill "review", an agent "reviewer", and a command "run-review"
+- **THEN** the system SHALL resolve prompts from `skills/review.md`, `agents/reviewer.md`, and `commands/run-review.md` respectively
 
 ### Requirement: Authors can scaffold a new facet project interactively
 

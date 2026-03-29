@@ -1,7 +1,7 @@
 import { type } from 'arktype'
 
 /**
- * Schema for server.yaml — the MCP server manifest.
+ * Schema for the server manifest (server.json).
  * Matches the shape defined in ADR-005.
  */
 export const ServerManifestSchema = type({

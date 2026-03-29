@@ -9,7 +9,7 @@ Facet manifest parsing, validation, and build pipeline. Entry point: `src/index.
 ```
 src/
 ├── schemas/        # Arktype schemas (facet manifest, lockfile, server manifest)
-├── loaders/        # Load and validate facet.yaml / server manifests from disk
+├── loaders/        # Load and validate facet manifest / server manifests from disk
 ├── build/          # Build pipeline: collision detection, validation, output writing
 ├── types.ts        # Shared type definitions
 ├── index.ts        # Public API entry point

@@ -17,8 +17,8 @@ Validates and builds the facet in the specified directory (defaults to the curre
 
 The build command runs a validation pipeline, assembles an archive, and computes content hashes:
 
-1. **Load manifest** — reads `facet.yaml`, parses YAML, validates against the schema, checks business-rule constraints (at least one text asset, etc.)
-2. **Resolve prompts** — reads all file-based prompt references for skills, agents, and commands. If a referenced file doesn't exist, the build fails with an error identifying the asset and the missing file.
+1. **Load manifest** — reads `facet.json`, parses JSON, validates against the schema, checks business-rule constraints (at least one text asset, etc.)
+2. **Resolve prompts** — reads prompt files at conventional paths (`<type>/<name>.md`) for skills, agents, and commands. If an expected file doesn't exist, the build fails with an error identifying the asset and the missing file path.
 3. **Validate compact facets** — checks that compact entries in the `facets` section match the `name@version` format.
 4. **Detect naming collisions** — fails if the same name is used more than once within the same asset type (e.g., two skills both named "review"). Assets of different types may share a name.
 5. **Validate platform config** — validates platform configuration for known platforms (e.g., `opencode`, `claude-code`). Unknown platforms produce a warning but do not fail the build.
@@ -37,7 +37,7 @@ The build manifest format:
   "archive": "<name>-<version>.facet",
   "integrity": "sha256:<hex>",
   "assets": {
-    "facet.yaml": "sha256:<hex>",
+    "facet.json": "sha256:<hex>",
     "skills/<name>.md": "sha256:<hex>"
   }
 }

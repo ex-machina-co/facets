@@ -24,7 +24,7 @@ This ADR defines what happens during `facet build` and `facet publish` — the s
 
 ## Decision Drivers
 
-* The manifest is immutable — the publish process must not modify `facet.yaml` (ADR-001).
+* The manifest is immutable — the publish process must not modify the facet manifest (ADR-001).
 * Composed text must be included in the bundle so consumers get a self-contained package with no install-time text resolution (Facets SDR-003).
 * Composition integrity requires that composed files match their attributed sources. The author must not be able to tamper with composed content.
 * Two publish mechanisms are needed: direct upload from a local directory, and Git-linked pull where the registry fetches from a repository at publish time (facet-cafe SDR-001).
@@ -42,7 +42,7 @@ The publish flow has two phases: **build** (local, for testing) and **publish** 
 
 **Steps:**
 
-1. **Parse the manifest.** Read `facet.yaml` and validate against the manifest schema (ADR-001).
+1. **Parse the manifest.** Read the facet manifest (`facet.json`) and validate against the manifest schema (ADR-001).
 
 2. **Resolve text composition.** For each entry in the `facets` section:
    - Fetch the referenced facet at the exact pinned version from the registry (or local cache).
@@ -63,21 +63,21 @@ The author can inspect the local bundle, test it, and iterate before publishing.
 `facet publish` uploads the author's work to the registry. The registry assembles the canonical bundle.
 
 **What the author uploads:**
-- The manifest (`facet.yaml`) — unmodified
+- The facet manifest — unmodified
 - All locally-authored component files (skills, agent prompts, command prompts)
 
 Composed files are NOT uploaded by the author. This is the key security property.
 
 **What the registry does:**
 
-1. **Validates the manifest.** Parses `facet.yaml` and validates against the schema.
+1. **Validates the manifest.** Parses the facet manifest and validates against the schema.
 
 2. **Resolves text composition server-side.** For each entry in the `facets` section, the registry fetches the referenced facet from its own storage — a trusted source. It extracts the composed components and their files, exactly as the local build would. Because the registry resolves composition from its own artifact store, the author cannot tamper with composed content.
 
 3. **Detects naming collisions.** Composed component names must not collide with locally-authored component names. Collisions reject the publish.
 
 4. **Assembles the canonical bundle.** The registry creates the bundle artifact containing:
-   - The manifest (`facet.yaml`) — unmodified
+   - The facet manifest — unmodified
    - All locally-authored component files (from the author's upload)
    - All composed component files (from the registry's own resolution)
 
