@@ -137,15 +137,16 @@ describe('writeScaffold', () => {
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Built buildable')
 
-    // Verify dist/ output exists
-    const distManifest = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
+    // Verify dist/ output exists — archive + build manifest
+    const distArchive = await Bun.file(join(dir, 'dist/buildable-0.1.0.facet')).exists()
+    expect(distArchive).toBe(true)
+
+    const distManifest = await Bun.file(join(dir, 'dist/build-manifest.json')).exists()
     expect(distManifest).toBe(true)
 
-    const distSkill = await Bun.file(join(dir, 'dist/skills/helper.md')).exists()
-    expect(distSkill).toBe(true)
-
-    const distAgent = await Bun.file(join(dir, 'dist/agents/assistant.md')).exists()
-    expect(distAgent).toBe(true)
+    // No loose files
+    const looseManifest = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
+    expect(looseManifest).toBe(false)
   })
 })
 
@@ -170,6 +171,7 @@ skills:
     const result = await runCli('build', dir)
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toContain('Built test-facet')
+    expect(result.stdout).toContain('sha256:')
   })
 
   test('build fails on missing manifest', async () => {

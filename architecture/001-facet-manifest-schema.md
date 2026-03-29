@@ -2,24 +2,24 @@
 status: accepted
 date: 2026-03-05
 decision-makers: julian
-modified-by: local-authoring
 ---
 
 # ADR-001: Facet Manifest Schema
 
 ## Status History
 
-| status                              | date       | decision-makers | github |
-| ----------------------------------- | ---------- | --------------- | ------ |
-| proposed                            | 2026-03-05 | julian          |        |
-| accepted                            | 2026-03-27 | julian          |        |
-| modified by change: local-authoring | 2026-03-27 | julian          |        |
+| status                                             | date       | decision-makers | github |
+|----------------------------------------------------|------------|-----------------|--------|
+| proposed                                           | 2026-03-05 | julian          |        |
+| accepted                                           | 2026-03-27 | julian          |        |
+| modified by change: local-authoring                | 2026-03-27 | julian          |        |
+| modified by ADR-006: manifest serialization format | 2026-03-28 | julian          |        |
 
 ## Context and Problem Statement
 
 A facet is a distributable unit of AI assistant configuration. It contains text artifacts — skills, agents, and commands — that are consumed by an LLM. A facet may also reference MCP servers, which are a separate artifact type containing executable code.
 
-The manifest (`facet.yaml`) is the source of truth for what a facet contains, what other facets it draws from, and which MCP servers it needs. The manifest schema must support:
+The manifest is the source of truth for what a facet contains, what other facets it draws from, and which MCP servers it needs. The manifest schema must support:
 
 - Text composition from other facets (reusing skills, agents, commands)
 - MCP server references (servers are a separate artifact type, not part of the facet)
@@ -38,7 +38,9 @@ This ADR defines the manifest schema at the spec level — what fields exist, wh
 
 ## Decision Outcome
 
-The facet manifest (`facet.yaml`) has the following structure:
+The facet manifest has the following structure.
+
+> **Note:** This ADR defines the manifest schema. The serialization format is JSON, governed by ADR-006 (Manifest Serialization Format). Examples below use YAML for clarity; the canonical format is JSON.
 
 ### Example
 

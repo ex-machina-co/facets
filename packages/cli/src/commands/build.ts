@@ -13,15 +13,17 @@ export const buildCommand: Command = {
     let buildName = ''
     let buildVersion = ''
     let artifactCount = 0
+    let integrity = ''
     let errorCount = 0
 
     const instance = render(
       createElement(BuildView, {
         rootDir,
-        onSuccess: (name: string, version: string, fileCount: number) => {
+        onSuccess: (name: string, version: string, fileCount: number, hash: string) => {
           buildName = name
           buildVersion = version
           artifactCount = fileCount
+          integrity = hash
         },
         onFailure: (count: number) => {
           errorCount = count
@@ -32,7 +34,8 @@ export const buildCommand: Command = {
     try {
       await instance.waitUntilExit()
       // Ink has unmounted — print stdout summary for scroll-back
-      process.stdout.write(`✓ Built ${buildName} v${buildVersion} → dist/ (${artifactCount} artifacts)\n`)
+      const shortHash = integrity.length > 20 ? `${integrity.slice(0, 20)}...` : integrity
+      process.stdout.write(`✓ Built ${buildName} v${buildVersion} → dist/ (${artifactCount} assets, ${shortHash})\n`)
       return 0
     } catch {
       process.stdout.write(`✗ Build failed — ${errorCount} error${errorCount !== 1 ? 's' : ''}\n`)

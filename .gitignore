@@ -2,6 +2,8 @@
 .strategy/
 lefthook-local.yml
 
+*.bun-build
+
 dist/
 docs/.mintlify/
 node_modules/

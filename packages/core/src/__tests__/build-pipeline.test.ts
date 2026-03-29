@@ -225,6 +225,16 @@ skills:
     if (result.ok) {
       expect(result.data.name).toBe('test-facet')
       expect(result.data.skills?.example?.prompt).toBe('# Example skill')
+
+      // Content hashing fields
+      expect(result.archiveFilename).toBe('test-facet-1.0.0.facet')
+      expect(result.archiveBytes.length).toBeGreaterThan(0)
+      expect(Object.keys(result.assetHashes)).toContain('facet.yaml')
+      expect(Object.keys(result.assetHashes)).toContain('skills/example.md')
+      expect(result.assetHashes['skills/example.md']).toMatchInlineSnapshot(
+        `"sha256:ded8057927e03783371d0d929e4a6e92da66eb9dd164377ad6845a5a1c0cb5ba"`,
+      )
+      expect(result.integrity).toMatch(/^sha256:[a-f0-9]{64}$/)
     }
   })
 
@@ -280,6 +290,50 @@ commands:
     expect(result.ok).toBe(true)
   })
 
+  test('build with all asset types includes all hashes', async () => {
+    const dir = await createFixtureDir('all-types')
+    await Bun.write(join(dir, 'skills/alpha.md'), '# Alpha skill')
+    await Bun.write(join(dir, 'skills/beta.md'), '# Beta skill')
+    await Bun.write(join(dir, 'agents/helper.md'), '# Helper agent')
+    await Bun.write(join(dir, 'commands/deploy.md'), '# Deploy command')
+    await Bun.write(
+      join(dir, 'facet.yaml'),
+      `
+name: multi-facet
+version: "2.0.0"
+skills:
+  alpha:
+    description: "Alpha skill"
+    prompt: { file: skills/alpha.md }
+  beta:
+    description: "Beta skill"
+    prompt: { file: skills/beta.md }
+agents:
+  helper:
+    description: "Helper agent"
+    prompt: { file: agents/helper.md }
+commands:
+  deploy:
+    description: "Deploy command"
+    prompt: { file: commands/deploy.md }
+`,
+    )
+
+    const result = await runBuildPipeline(dir)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.archiveFilename).toBe('multi-facet-2.0.0.facet')
+      const assetPaths = Object.keys(result.assetHashes).sort()
+      expect(assetPaths).toEqual([
+        'agents/helper.md',
+        'commands/deploy.md',
+        'facet.yaml',
+        'skills/alpha.md',
+        'skills/beta.md',
+      ])
+    }
+  })
+
   test('build fails on malformed compact facets entry', async () => {
     const dir = await createFixtureDir('bad-facets')
     await Bun.write(join(dir, 'skills/x.md'), '# Skill')
@@ -308,50 +362,66 @@ facets:
 // --- Build output generation ---
 
 describe('writeBuildOutput', () => {
-  test('writes resolved manifest and asset files to dist/', async () => {
+  test('writes archive and build manifest to dist/', async () => {
     const dir = await createFixtureDir('write-output')
+    await Bun.write(join(dir, 'skills/example.md'), '# Resolved content')
     await Bun.write(
       join(dir, 'facet.yaml'),
       `name: test-facet\nversion: "1.0.0"\nskills:\n  example:\n    description: "A skill"\n    prompt: { file: skills/example.md }\n`,
     )
 
-    const resolved = {
-      name: 'test-facet',
-      version: '1.0.0',
-      skills: {
-        example: {
-          description: 'A skill',
-          prompt: '# Resolved content',
-        },
-      },
-    }
+    const result = await runBuildPipeline(dir)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
 
-    await writeBuildOutput(resolved, dir)
+    await writeBuildOutput(result, dir)
 
-    // Manifest copied
-    const manifest = await Bun.file(join(dir, 'dist/facet.yaml')).text()
-    expect(manifest).toContain('test-facet')
+    // Archive exists
+    const archiveExists = await Bun.file(join(dir, 'dist/test-facet-1.0.0.facet')).exists()
+    expect(archiveExists).toBe(true)
 
-    // Resolved skill file
-    const skill = await Bun.file(join(dir, 'dist/skills/example.md')).text()
-    expect(skill).toBe('# Resolved content')
+    // Build manifest exists and has correct structure
+    const manifestText = await Bun.file(join(dir, 'dist/build-manifest.json')).text()
+    const manifest = JSON.parse(manifestText)
+    expect(manifest.facetVersion).toBe(1)
+    expect(manifest.archive).toBe('test-facet-1.0.0.facet')
+    expect(manifest.integrity).toMatch(/^sha256:[a-f0-9]{64}$/)
+    expect(manifest.assets['facet.yaml']).toMatchInlineSnapshot(
+      `"sha256:d78685f84728435106062cef151c723b462e2cc3934198afeb9b55251cfaa334"`,
+    )
+    expect(manifest.assets['skills/example.md']).toMatchInlineSnapshot(
+      `"sha256:248fb2d514c77ac31eea64a09399adbabcfa05c16afce7292ea1165bd83fe3bc"`,
+    )
+
+    // No loose files
+    const looseManifest = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
+    expect(looseManifest).toBe(false)
   })
 
   test('cleans previous dist/ before writing', async () => {
     const dir = await createFixtureDir('clean-dist')
-    await Bun.write(join(dir, 'facet.yaml'), 'name: test\nversion: "1.0.0"\n')
+    await Bun.write(join(dir, 'skills/x.md'), '# Skill')
+    await Bun.write(
+      join(dir, 'facet.yaml'),
+      `name: test\nversion: "1.0.0"\nskills:\n  x:\n    description: "A skill"\n    prompt: { file: skills/x.md }\n`,
+    )
     // Write a stale file in dist/
     await Bun.write(join(dir, 'dist/stale.txt'), 'stale')
 
-    const resolved = { name: 'test', version: '1.0.0' }
-    await writeBuildOutput(resolved, dir)
+    const result = await runBuildPipeline(dir)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+
+    await writeBuildOutput(result, dir)
 
     // Stale file should be gone
     const staleExists = await Bun.file(join(dir, 'dist/stale.txt')).exists()
     expect(staleExists).toBe(false)
 
-    // Manifest should exist
-    const manifestExists = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
+    // Archive and manifest should exist
+    const archiveExists = await Bun.file(join(dir, 'dist/test-1.0.0.facet')).exists()
+    expect(archiveExists).toBe(true)
+    const manifestExists = await Bun.file(join(dir, 'dist/build-manifest.json')).exists()
     expect(manifestExists).toBe(true)
   })
 })

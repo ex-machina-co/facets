@@ -1,7 +1,15 @@
 // types
 
+export type { ArchiveEntry } from './build/content-hash.ts'
+export {
+  assembleTar,
+  collectArchiveEntries,
+  compressArchive,
+  computeAssetHashes,
+  computeContentHash,
+} from './build/content-hash.ts'
 export { detectNamingCollisions } from './build/detect-collisions.ts'
-export type { BuildFailure, BuildResult } from './build/pipeline.ts'
+export type { BuildFailure, BuildProgress, BuildResult } from './build/pipeline.ts'
 // build pipeline
 export { runBuildPipeline } from './build/pipeline.ts'
 export { validateCompactFacets } from './build/validate-facets.ts'

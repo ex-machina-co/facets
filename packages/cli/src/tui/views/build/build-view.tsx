@@ -1,14 +1,16 @@
-import { runBuildPipeline, writeBuildOutput } from '@ex-machina/facet-core'
+import { type BuildProgress, runBuildPipeline, writeBuildOutput } from '@ex-machina/facet-core'
 import { Box, Text, useApp } from 'ink'
 import { useCallback, useEffect, useState } from 'react'
 import type { Stage } from '../../components/stage-row.tsx'
 import { StageRow } from '../../components/stage-row.tsx'
 import { THEME } from '../../theme.ts'
 
-interface BuildResult {
+interface BuildViewResult {
   name: string
   version: string
   files: string[]
+  archiveFilename: string
+  integrity: string
   warnings: string[]
 }
 
@@ -18,15 +20,16 @@ export function BuildView({
   onFailure,
 }: {
   rootDir: string
-  onSuccess?: (name: string, version: string, fileCount: number) => void
+  onSuccess?: (name: string, version: string, fileCount: number, integrity: string) => void
   onFailure?: (errorCount: number) => void
 }) {
   const { exit } = useApp()
   const [stages, setStages] = useState<Stage[]>([
     { label: 'Validating manifest', status: 'pending' },
+    { label: 'Assembling archive', status: 'pending' },
     { label: 'Writing output', status: 'pending' },
   ])
-  const [result, setResult] = useState<BuildResult | null>(null)
+  const [result, setResult] = useState<BuildViewResult | null>(null)
   const [errors, setErrors] = useState<string[]>([])
   const [warnings, setWarnings] = useState<string[]>([])
 
@@ -36,54 +39,51 @@ export function BuildView({
 
   useEffect(() => {
     async function run() {
-      // Stage 1: Validate
-      updateStage(0, { status: 'running' })
-      const pipelineResult = await runBuildPipeline(rootDir)
+      // Stages 1 & 2: Validate and assemble archive (pipeline handles both, emits progress)
+      const stageIndexMap: Record<string, number> = {
+        'Validating manifest': 0,
+        'Assembling archive': 1,
+      }
+
+      const pipelineResult = await runBuildPipeline(rootDir, (progress: BuildProgress) => {
+        const index = stageIndexMap[progress.stage]
+        if (index !== undefined) {
+          updateStage(index, {
+            status: progress.status === 'running' ? 'running' : progress.status === 'done' ? 'done' : 'failed',
+          })
+        }
+      })
+
       setWarnings(pipelineResult.warnings)
 
       if (!pipelineResult.ok) {
-        updateStage(0, { status: 'failed' })
         setErrors(pipelineResult.errors.map((e) => `${e.path ? `${e.path}: ` : ''}${e.message}`))
         onFailure?.(pipelineResult.errors.length)
         exit(new Error('Build failed'))
         return
       }
-      updateStage(0, { status: 'done' })
 
-      // Stage 2: Write output
-      updateStage(1, { status: 'running' })
+      // Stage 3: Write output
+      updateStage(2, { status: 'running' })
       try {
-        await writeBuildOutput(pipelineResult.data, rootDir)
+        await writeBuildOutput(pipelineResult, rootDir)
 
-        // Derive file list from resolved manifest
-        const files: string[] = ['facet.yaml']
-        if (pipelineResult.data.skills) {
-          for (const name of Object.keys(pipelineResult.data.skills)) {
-            files.push(`skills/${name}.md`)
-          }
-        }
-        if (pipelineResult.data.agents) {
-          for (const name of Object.keys(pipelineResult.data.agents)) {
-            files.push(`agents/${name}.md`)
-          }
-        }
-        if (pipelineResult.data.commands) {
-          for (const name of Object.keys(pipelineResult.data.commands)) {
-            files.push(`commands/${name}.md`)
-          }
-        }
+        // Derive file list from asset hashes (these are the files inside the archive)
+        const files = Object.keys(pipelineResult.assetHashes).sort()
 
-        updateStage(1, { status: 'done' })
+        updateStage(2, { status: 'done' })
         setResult({
           name: pipelineResult.data.name,
           version: pipelineResult.data.version,
           files,
+          archiveFilename: pipelineResult.archiveFilename,
+          integrity: pipelineResult.integrity,
           warnings: pipelineResult.warnings,
         })
-        onSuccess?.(pipelineResult.data.name, pipelineResult.data.version, files.length)
+        onSuccess?.(pipelineResult.data.name, pipelineResult.data.version, files.length, pipelineResult.integrity)
         exit()
       } catch (err) {
-        updateStage(1, { status: 'failed', detail: String(err) })
+        updateStage(2, { status: 'failed', detail: String(err) })
         exit(err instanceof Error ? err : new Error(String(err)))
       }
     }
@@ -133,12 +133,16 @@ export function BuildView({
           <Text color={THEME.success} bold>
             Built successfully → dist/
           </Text>
+          <Text> {result.archiveFilename}</Text>
+          <Text color={THEME.hint}> Archive contents:</Text>
           {result.files.map((f) => (
             <Text key={f}> {f}</Text>
           ))}
-          <Text color={THEME.hint}>
-            {result.files.length} artifact{result.files.length !== 1 ? 's' : ''}
-          </Text>
+          <Box marginTop={1}>
+            <Text color={THEME.hint}>
+              {result.files.length} asset{result.files.length !== 1 ? 's' : ''} · {result.integrity}
+            </Text>
+          </Box>
           <Box marginTop={1}>
             <Text color={THEME.hint}>Next: facet publish (coming soon)</Text>
           </Box>

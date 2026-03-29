@@ -209,17 +209,18 @@ The scaffolded project SHALL be immediately buildable — running the build comm
 
 ### Requirement: Authors can build a facet locally for validation and inspection
 
-The system SHALL compile a facet project into a build output directory. The build command SHALL read the manifest, validate it, verify that every declared asset file exists, resolve all file-based prompts to their content, run all validation checks, and write the resolved output to a `dist/` directory. The build output SHALL contain the manifest and all text asset files with prompts resolved to their final string content.
+The system SHALL compile a facet project into a build output directory. The build command SHALL read the manifest, validate it, verify that every declared asset file exists, resolve all file-based prompts to their content, run all validation checks, assemble the resolved output into a deterministic compressed archive, compute content hashes, and write the archive and build manifest to a `dist/` directory. The build output SHALL contain a compressed archive (`.facet` file) with the manifest and all text asset files with prompts resolved to their final string content, and a build manifest (`build-manifest.json`) recording content hashes.
 
-The build command SHALL render its progress as a step-by-step display, showing each pipeline stage as it completes. On success, the system SHALL display a file listing of the build output. On failure, the system SHALL indicate which stage failed and display errors with their field paths. After the display exits, the system SHALL print a brief plain-text summary to stdout so it persists in terminal scroll-back.
+The build command SHALL render its progress as a step-by-step display, showing each pipeline stage as it completes — including the archive assembly stage. On success, the system SHALL display the archive contents listing and the archive content hash. On failure, the system SHALL indicate which stage failed and display errors with their field paths. After the display exits, the system SHALL print a brief plain-text summary to stdout — including the content hash — so it persists in terminal scroll-back.
 
 #### Scenario: Successful build of a valid facet
 
 - **WHEN** the author runs the build command in a directory with a valid manifest and all referenced files exist
-- **THEN** the system SHALL write the resolved manifest and all text asset files to `dist/`
-- **AND** all file-based prompts SHALL be resolved to their string content in the output
-- **AND** the system SHALL display a summary of the build output
-- **AND** the system SHALL print a brief success summary to stdout
+- **THEN** the system SHALL write a compressed archive and build manifest to `dist/`
+- **AND** the archive SHALL contain the facet manifest and all text asset files with prompts resolved to their string content
+- **AND** the build manifest SHALL contain the archive content hash and per-asset content hashes
+- **AND** the system SHALL display the archive contents and content hash
+- **AND** the system SHALL print a brief success summary to stdout including the content hash
 
 #### Scenario: Build fails on invalid manifest
 
