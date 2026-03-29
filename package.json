@@ -12,6 +12,8 @@
     "dev": "bun turbo build && bun run link",
     "types": "tsc --noEmit",
     "check": "bun turbo check",
+    "lint": "biome check .",
+    "format": "biome check --write --unsafe .",
     "change": "changeset",
     "version-packages": "changeset version",
     "release": "bun run check && changeset publish",

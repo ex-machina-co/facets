@@ -13,7 +13,7 @@
   },
   "linter": {
     "enabled": true,
-    "includes": ["packages/**"],
+    "includes": ["**", "!.opencode/**", "!.changeset/**", "!.claude/**"],
     "rules": {
       "recommended": true,
       "suspicious": {

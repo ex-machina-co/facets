@@ -12,7 +12,6 @@
   },
   "scripts": {
     "build": "bun build src/index.ts --compile --outfile dist/facet",
-    "lint": "biome check .",
     "types": "tsc --noEmit",
     "test": "bun test"
   },

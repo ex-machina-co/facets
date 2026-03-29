@@ -3,7 +3,6 @@ import TextInput from 'ink-text-input'
 import { THEME } from '../theme.ts'
 
 export function AssetInlineInput({
-  id,
   value,
   placeholder,
   error,

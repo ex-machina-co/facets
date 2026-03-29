@@ -5,9 +5,6 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "lint": {
-      "dependsOn": []
-    },
     "test": {
       "dependsOn": ["build"]
     },
@@ -15,9 +12,10 @@
       "dependsOn": []
     },
     "check": {
-      "dependsOn": ["lint", "types", "test", "//#types"]
+      "dependsOn": ["//#lint", "types", "test", "//#types"]
     },
-    "//#types": {}
+    "//#types": {},
+    "//#lint": {}
   },
   "ui": "tui"
 }
