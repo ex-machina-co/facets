@@ -116,12 +116,46 @@ rules:
     - If the design changes observable behavior, CLI commands, APIs, or concepts covered in `docs/`, the design MUST note which doc files need updating
     - MUST check whether the design conflicts with or diverges from any existing ADR in `architecture/` (including `TERMINOLOGY.md`). If ADR drift is detected, this is a HARD STOP — the change MUST NOT proceed until the ADR situation is resolved outside of OpenSpec (either revise the ADR, write a new one, or determine the ADR was wrong). Implementation MUST NOT silently drift from ADRs.
   tasks:
+    - |
+      Every tasks.md MUST begin with a preamble block before any task headings.
+      The preamble MUST instruct the executing agent to load the `viper-execution-rules` skill
+      before running any tasks. Use this exact preamble:
+
+      ```
+      > **Before executing any tasks below**, load the `viper-execution-rules` skill for the full VIPER step protocol (step types, execution rules, gating, and hard constraints).
+      ```
     - Think, read, search, and explore to understand the problem before composing steps
     - Ask the user clarifying questions — don't make large assumptions about intent
     - Write the tasks as you see them
     - ONLY AFTER writing the tasks, load the `viper-planning` skill — it defines all step types, naming conventions, and hard rules
       - You MUST write the tasks first before loading the skill
       - You MUST NOT load the skill until you've written the tasks
-    - Reclassify each of the step you wrote as it's VIPER step type and prefix the step description with the type
+    - Reclassify each step as its VIPER step type and prefix the step description with the type
+    - |
+      Tasks MUST be organized into logical blocks using the Research-then-Implementation pattern:
+
+      - Each block covers a cohesive area of work (e.g., "Create Wizard", "Build Command", "Tests + Docs")
+      - Closely related groups (e.g., a wizard UI and the scaffolding code it calls) SHOULD be combined into a single block rather than kept as separate blocks
+      - Each block MUST be split into two numbered groups using ## headings:
+        - A **Research** group (heading suffixed with "— Research") containing ALL Explore and Propose steps for that block, frontloaded before any implementation
+        - An **Implementation** group (heading suffixed with "— Implementation") containing ALL Implement steps followed by a Verify step
+      - Explore steps within a Research group SHOULD be scoped to independent topics so they can be executed in parallel via subagents (e.g., separate explores for "Rezi lifecycle", "Rezi widgets", "Rezi focus management" rather than one monolithic explore)
+      - The final Propose step in a Research group SHOULD cover the approach for the entire Implementation group, not just one task
+      - Setup/dependency groups (e.g., "install packages") that are trivial and don't need research MAY use a flat structure without the Research/Implementation split
+
+      Example:
+      ```
+      ## 3. <Block Name> — Research
+      - [ ] 3.1 Explore: <research topic A — scoped for parallel subagent>
+      - [ ] 3.2 Explore: <research topic B — scoped for parallel subagent>
+      - [ ] 3.3 Explore: <review existing code relevant to this block>
+      - [ ] 3.4 Propose: <approach for the whole implementation block>
+
+      ## 4. <Block Name> — Implementation
+      - [ ] 4.1 Implement: <change A>
+      - [ ] 4.2 Implement: <change B>
+      - [ ] 4.3 Implement: <change C>
+      - [ ] 4.4 Verify: <run checks for this block>
+      ```
     - MUST check `docs/` and root `README.md` for content that references changed behavior, and SHOULD include documentation update tasks when affected docs are found
     - If the work corresponds to a roadmap phase, the tasks MUST include a final step to check whether the phase's success criteria are fully met. If all criteria are satisfied, the step SHOULD transition the phase to `completed` and archive it. If criteria remain unmet, the step MUST note explicitly what remains.

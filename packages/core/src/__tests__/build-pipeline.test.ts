@@ -96,7 +96,7 @@ describe('detectNamingCollisions', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('skill and command collision detected', () => {
+  test('skill and command sharing a name is allowed (cross-type)', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
@@ -104,13 +104,10 @@ describe('detectNamingCollisions', () => {
       commands: { review: { prompt: 'Run review' } },
     } as FacetManifest
     const errors = detectNamingCollisions(manifest)
-    expect(errors).toHaveLength(1)
-    expect(errors[0]?.message).toContain('review')
-    expect(errors[0]?.message).toContain('skill')
-    expect(errors[0]?.message).toContain('command')
+    expect(errors).toHaveLength(0)
   })
 
-  test('agent and skill collision detected', () => {
+  test('agent and skill sharing a name is allowed (cross-type)', () => {
     const manifest = {
       name: 'test',
       version: '1.0.0',
@@ -118,8 +115,19 @@ describe('detectNamingCollisions', () => {
       agents: { helper: { prompt: 'Help' } },
     } as FacetManifest
     const errors = detectNamingCollisions(manifest)
-    expect(errors).toHaveLength(1)
-    expect(errors[0]?.message).toContain('helper')
+    expect(errors).toHaveLength(0)
+  })
+
+  test('same name across all three types is allowed (cross-type)', () => {
+    const manifest = {
+      name: 'test',
+      version: '1.0.0',
+      skills: { deploy: { description: 'Deploy skill', prompt: 'Deploy' } },
+      agents: { deploy: { prompt: 'Deploy' } },
+      commands: { deploy: { prompt: 'Deploy' } },
+    } as FacetManifest
+    const errors = detectNamingCollisions(manifest)
+    expect(errors).toHaveLength(0)
   })
 })
 
@@ -248,8 +256,8 @@ skills:
     }
   })
 
-  test('build fails on naming collision', async () => {
-    const dir = await createFixtureDir('collision')
+  test('build succeeds with cross-type name sharing', async () => {
+    const dir = await createFixtureDir('cross-type')
     await Bun.write(join(dir, 'skills/review.md'), '# Review skill')
     await Bun.write(join(dir, 'commands/review.md'), '# Review command')
     await Bun.write(
@@ -269,11 +277,7 @@ commands:
     )
 
     const result = await runBuildPipeline(dir)
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.errors[0]?.message).toContain('review')
-      expect(result.errors[0]?.message).toContain('collision')
-    }
+    expect(result.ok).toBe(true)
   })
 
   test('build fails on malformed compact facets entry', async () => {

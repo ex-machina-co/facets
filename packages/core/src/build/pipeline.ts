@@ -21,7 +21,7 @@ export interface BuildFailure {
  * 1. Load manifest — read facet.yaml, parse YAML, validate schema, check constraints
  * 2. Resolve prompts — read file-based prompts for skills, agents, commands (also verifies files exist)
  * 3. Validate compact facets format — check name@version pattern
- * 4. Detect naming collisions — fail if same name used across asset types
+ * 4. Detect naming collisions — fail if same name used within an asset type
  * 5. Validate platform config — check known platform schemas, warn on unknown
  *
  * Returns the resolved manifest on success, or collected errors on failure.

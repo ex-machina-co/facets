@@ -6,3 +6,6 @@ dist/
 docs/.mintlify/
 node_modules/
 
+# used for testing and whatnot
+tmp/
+

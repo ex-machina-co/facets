@@ -125,8 +125,8 @@ describe('CLI — unexpected error', () => {
     // This test runs against source (not compiled binary) because it needs to
     // monkey-patch the command registry to inject a crashing command.
     const script = `
-      import { commands } from '${resolve(import.meta.dir, '../cli/commands.ts')}'
-      import { run } from '${resolve(import.meta.dir, '../cli/run.ts')}'
+      import { commands } from '${resolve(import.meta.dir, '../commands.ts')}'
+      import { run } from '${resolve(import.meta.dir, '../run.ts')}'
       commands['crash'] = {
         name: 'crash',
         description: 'Throws an error',

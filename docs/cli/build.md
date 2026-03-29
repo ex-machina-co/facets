@@ -20,7 +20,7 @@ The build command runs a validation pipeline and produces distributable output:
 1. **Load manifest** — reads `facet.yaml`, parses YAML, validates against the schema, checks business-rule constraints (at least one text asset, etc.)
 2. **Resolve prompts** — reads all file-based prompt references for skills, agents, and commands. If a referenced file doesn't exist, the build fails with an error identifying the asset and the missing file.
 3. **Validate compact facets** — checks that compact entries in the `facets` section match the `name@version` format.
-4. **Detect naming collisions** — fails if the same name is used across different asset types (e.g., a skill and a command both named "review").
+4. **Detect naming collisions** — fails if the same name is used more than once within the same asset type (e.g., two skills both named "review"). Assets of different types may share a name.
 5. **Validate platform config** — validates platform configuration for known platforms (e.g., `opencode`, `claude-code`). Unknown platforms produce a warning but do not fail the build.
 
 On success, the build writes output to `dist/`:

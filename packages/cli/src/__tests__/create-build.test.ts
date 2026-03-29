@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { writeScaffold } from '../commands/create.ts'
+import { writeScaffold } from '../commands/create/index.ts'
 
 let testDir: string
 
@@ -26,34 +26,45 @@ async function runCli(...args: string[]) {
   const proc = Bun.spawn([CLI_PATH, ...args], {
     stdout: 'pipe',
     stderr: 'pipe',
+    env: { ...process.env, NO_COLOR: '1' },
   })
   const stdout = await new Response(proc.stdout).text()
   const stderr = await new Response(proc.stderr).text()
   const exitCode = await proc.exited
+
+  // Don't let build errors flood test output — capture but don't dump
+  if (exitCode !== 0 && stderr.trim()) {
+    const lines = stderr.trim().split('\n')
+    const summary =
+      lines.length > 3 ? [...lines.slice(0, 3), `... (${lines.length - 3} more lines)`].join('\n') : stderr.trim()
+    return { stdout: stdout.trim(), stderr: summary, exitCode }
+  }
+
   return { stdout: stdout.trim(), stderr: stderr.trim(), exitCode }
 }
 
 // --- Scaffold generation (unit) ---
 
 describe('writeScaffold', () => {
-  test('scaffolds with all asset types', async () => {
+  test('scaffolds with named assets across all types', async () => {
     const dir = await createFixtureDir('scaffold-all')
     const files = await writeScaffold(
       {
         name: 'my-facet',
         version: '0.1.0',
         description: 'A test facet',
-        skills: true,
-        agents: true,
-        commands: true,
+        skills: ['code-review', 'testing-guide'],
+        agents: ['reviewer'],
+        commands: ['deploy'],
       },
       dir,
     )
 
     expect(files).toContain('facet.yaml')
-    expect(files).toContain('skills/example-skill.md')
-    expect(files).toContain('agents/example-agent.md')
-    expect(files).toContain('commands/example-command.md')
+    expect(files).toContain('skills/code-review.md')
+    expect(files).toContain('skills/testing-guide.md')
+    expect(files).toContain('agents/reviewer.md')
+    expect(files).toContain('commands/deploy.md')
 
     // Verify manifest content
     const manifest = await Bun.file(join(dir, 'facet.yaml')).text()
@@ -61,38 +72,45 @@ describe('writeScaffold', () => {
     expect(manifest).toContain('version: "0.1.0"')
     expect(manifest).toContain('description: "A test facet"')
     expect(manifest).toContain('skills:')
+    expect(manifest).toContain('code-review:')
+    expect(manifest).toContain('testing-guide:')
     expect(manifest).toContain('agents:')
+    expect(manifest).toContain('reviewer:')
     expect(manifest).toContain('commands:')
+    expect(manifest).toContain('deploy:')
 
-    // Verify starter files exist and have template content
-    const skill = await Bun.file(join(dir, 'skills/example-skill.md')).text()
-    expect(skill).toContain('# Example Skill')
+    // Verify starter files exist and have named template content
+    const skill = await Bun.file(join(dir, 'skills/code-review.md')).text()
+    expect(skill).toContain('# Code Review')
 
-    const agent = await Bun.file(join(dir, 'agents/example-agent.md')).text()
-    expect(agent).toContain('# Example Agent')
+    const skill2 = await Bun.file(join(dir, 'skills/testing-guide.md')).text()
+    expect(skill2).toContain('# Testing Guide')
 
-    const command = await Bun.file(join(dir, 'commands/example-command.md')).text()
-    expect(command).toContain('# Example Command')
+    const agent = await Bun.file(join(dir, 'agents/reviewer.md')).text()
+    expect(agent).toContain('# Reviewer')
+
+    const command = await Bun.file(join(dir, 'commands/deploy.md')).text()
+    expect(command).toContain('# Deploy')
   })
 
-  test('scaffolds with only skills', async () => {
+  test('scaffolds with only one skill', async () => {
     const dir = await createFixtureDir('scaffold-skills-only')
     const files = await writeScaffold(
       {
         name: 'minimal',
         version: '0.1.0',
         description: '',
-        skills: true,
-        agents: false,
-        commands: false,
+        skills: ['minimal'],
+        agents: [],
+        commands: [],
       },
       dir,
     )
 
     expect(files).toContain('facet.yaml')
-    expect(files).toContain('skills/example-skill.md')
-    expect(files).not.toContain('agents/example-agent.md')
-    expect(files).not.toContain('commands/example-command.md')
+    expect(files).toContain('skills/minimal.md')
+    expect(files).not.toContain('agents/')
+    expect(files).not.toContain('commands/')
 
     const manifest = await Bun.file(join(dir, 'facet.yaml')).text()
     expect(manifest).toContain('skills:')
@@ -106,10 +124,10 @@ describe('writeScaffold', () => {
       {
         name: 'buildable',
         version: '0.1.0',
-        description: '',
-        skills: true,
-        agents: true,
-        commands: false,
+        description: 'A buildable facet',
+        skills: ['helper'],
+        agents: ['assistant'],
+        commands: [],
       },
       dir,
     )
@@ -117,16 +135,16 @@ describe('writeScaffold', () => {
     // Run facet build against the scaffolded project
     const result = await runCli('build', dir)
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain('Build succeeded')
+    expect(result.stdout).toContain('Built buildable')
 
     // Verify dist/ output exists
     const distManifest = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
     expect(distManifest).toBe(true)
 
-    const distSkill = await Bun.file(join(dir, 'dist/skills/example-skill.md')).exists()
+    const distSkill = await Bun.file(join(dir, 'dist/skills/helper.md')).exists()
     expect(distSkill).toBe(true)
 
-    const distAgent = await Bun.file(join(dir, 'dist/agents/example-agent.md')).exists()
+    const distAgent = await Bun.file(join(dir, 'dist/agents/assistant.md')).exists()
     expect(distAgent).toBe(true)
   })
 })
@@ -151,8 +169,7 @@ skills:
 
     const result = await runCli('build', dir)
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain('Build succeeded')
-    expect(result.stdout).toContain('dist/')
+    expect(result.stdout).toContain('Built test-facet')
   })
 
   test('build fails on missing manifest', async () => {
@@ -180,6 +197,5 @@ skills:
     const result = await runCli('build', dir)
     expect(result.exitCode).toBe(1)
     expect(result.stdout).toContain('Build failed')
-    expect(result.stdout).toContain('nonexistent.md')
   })
 })

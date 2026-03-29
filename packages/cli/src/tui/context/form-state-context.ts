@@ -1,0 +1,229 @@
+import type { ReactNode } from 'react'
+import { createContext, createElement, useCallback, useContext, useMemo, useState } from 'react'
+import type { CreateOptions } from '../../commands/create-scaffold.ts'
+import { isValidKebabCase } from '../../commands/create-scaffold.ts'
+
+// --- Types ---
+
+export type FieldStatus = 'empty' | 'editing' | 'confirmed'
+export type RequiredFieldKey = 'name' | 'description' | 'version'
+export type AssetSectionKey = 'skill' | 'command' | 'agent'
+
+export interface FieldState {
+  value: string
+  status: FieldStatus
+}
+
+export interface AssetSectionState {
+  items: string[]
+  editing?: string
+  adding: boolean
+}
+
+export interface FormState {
+  fields: {
+    name: FieldState
+    description: FieldState
+    version: FieldState
+  }
+  assets: {
+    skill: AssetSectionState
+    command: AssetSectionState
+    agent: AssetSectionState
+  }
+}
+
+// --- Context value ---
+
+interface FormStateContextValue {
+  form: FormState
+
+  // Field operations
+  setFieldValue: (field: RequiredFieldKey, value: string) => void
+  setFieldStatus: (field: RequiredFieldKey, status: FieldStatus) => void
+
+  // Asset operations
+  addAsset: (section: AssetSectionKey, name: string) => void
+  removeAsset: (section: AssetSectionKey, name: string) => void
+  renameAsset: (section: AssetSectionKey, oldName: string, newName: string) => void
+  setAssetAdding: (section: AssetSectionKey, adding: boolean) => void
+  setAssetEditing: (section: AssetSectionKey, name?: string) => void
+
+  // Build CreateOptions for scaffold
+  toCreateOptions: () => CreateOptions
+}
+
+// --- Defaults ---
+
+const defaultAssetSection: AssetSectionState = {
+  items: [],
+  editing: undefined,
+  adding: false,
+}
+
+const defaultForm: FormState = {
+  fields: {
+    name: { value: '', status: 'empty' },
+    description: { value: '', status: 'empty' },
+    version: { value: '', status: 'empty' },
+  },
+  assets: {
+    skill: { ...defaultAssetSection },
+    command: { ...defaultAssetSection },
+    agent: { ...defaultAssetSection },
+  },
+}
+
+const FormStateContext = createContext<FormStateContextValue>({
+  form: defaultForm,
+  setFieldValue: () => {},
+  setFieldStatus: () => {},
+  addAsset: () => {},
+  removeAsset: () => {},
+  renameAsset: () => {},
+  setAssetAdding: () => {},
+  setAssetEditing: () => {},
+  toCreateOptions: () => ({ name: '', version: '', description: '', skills: [], commands: [], agents: [] }),
+})
+
+// --- Provider ---
+
+export function FormStateProvider({ children }: { children: ReactNode }) {
+  const [form, setForm] = useState<FormState>(defaultForm)
+
+  const setFieldValue = useCallback((field: RequiredFieldKey, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      fields: {
+        ...prev.fields,
+        [field]: { ...prev.fields[field], value },
+      },
+    }))
+  }, [])
+
+  const setFieldStatus = useCallback((field: RequiredFieldKey, status: FieldStatus) => {
+    setForm((prev) => ({
+      ...prev,
+      fields: {
+        ...prev.fields,
+        [field]: { ...prev.fields[field], status },
+      },
+    }))
+  }, [])
+
+  const addAsset = useCallback((section: AssetSectionKey, name: string) => {
+    if (!isValidKebabCase(name)) return
+    setForm((prev) => {
+      const current = prev.assets[section]
+      if (current.items.includes(name)) return prev
+      return {
+        ...prev,
+        assets: {
+          ...prev.assets,
+          [section]: { ...current, items: [...current.items, name] },
+        },
+      }
+    })
+  }, [])
+
+  const removeAsset = useCallback((section: AssetSectionKey, name: string) => {
+    setForm((prev) => {
+      const current = prev.assets[section]
+      return {
+        ...prev,
+        assets: {
+          ...prev.assets,
+          [section]: {
+            ...current,
+            items: current.items.filter((item) => item !== name),
+            editing: current.editing === name ? undefined : current.editing,
+          },
+        },
+      }
+    })
+  }, [])
+
+  const renameAsset = useCallback((section: AssetSectionKey, oldName: string, newName: string) => {
+    if (!isValidKebabCase(newName)) return
+    setForm((prev) => {
+      const current = prev.assets[section]
+      if (current.items.includes(newName)) return prev
+      return {
+        ...prev,
+        assets: {
+          ...prev.assets,
+          [section]: {
+            ...current,
+            items: current.items.map((item) => (item === oldName ? newName : item)),
+            editing: current.editing === oldName ? newName : current.editing,
+          },
+        },
+      }
+    })
+  }, [])
+
+  const setAssetAdding = useCallback((section: AssetSectionKey, adding: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      assets: {
+        ...prev.assets,
+        [section]: { ...prev.assets[section], adding },
+      },
+    }))
+  }, [])
+
+  const setAssetEditing = useCallback((section: AssetSectionKey, name?: string) => {
+    setForm((prev) => ({
+      ...prev,
+      assets: {
+        ...prev.assets,
+        [section]: { ...prev.assets[section], editing: name },
+      },
+    }))
+  }, [])
+
+  const toCreateOptions = useCallback(
+    (): CreateOptions => ({
+      name: form.fields.name.value,
+      version: form.fields.version.value,
+      description: form.fields.description.value,
+      skills: form.assets.skill.items,
+      commands: form.assets.command.items,
+      agents: form.assets.agent.items,
+    }),
+    [form],
+  )
+
+  const value = useMemo<FormStateContextValue>(
+    () => ({
+      form,
+      setFieldValue,
+      setFieldStatus,
+      addAsset,
+      removeAsset,
+      renameAsset,
+      setAssetAdding,
+      setAssetEditing,
+      toCreateOptions,
+    }),
+    [
+      form,
+      setFieldValue,
+      setFieldStatus,
+      addAsset,
+      removeAsset,
+      renameAsset,
+      setAssetAdding,
+      setAssetEditing,
+      toCreateOptions,
+    ],
+  )
+
+  return createElement(FormStateContext.Provider, { value }, children)
+}
+
+// --- Hook ---
+
+export function useFormState() {
+  return useContext(FormStateContext)
+}

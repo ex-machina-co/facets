@@ -1,5 +1,7 @@
-import { runBuildPipeline, writeBuildOutput } from '@ex-machina/facet-core'
-import type { Command } from '../cli/commands.ts'
+import { render } from 'ink'
+import { createElement } from 'react'
+import type { Command } from '../commands.ts'
+import { BuildView } from '../tui/views/build/build-view.tsx'
 
 export const buildCommand: Command = {
   name: 'build',
@@ -7,29 +9,34 @@ export const buildCommand: Command = {
   run: async (args: string[]): Promise<number> => {
     const rootDir = args[0] || process.cwd()
 
-    console.log('Building facet...\n')
+    // Track result for stdout summary after Ink exits
+    let buildName = ''
+    let buildVersion = ''
+    let artifactCount = 0
+    let errorCount = 0
 
-    const result = await runBuildPipeline(rootDir)
+    const instance = render(
+      createElement(BuildView, {
+        rootDir,
+        onSuccess: (name: string, version: string, fileCount: number) => {
+          buildName = name
+          buildVersion = version
+          artifactCount = fileCount
+        },
+        onFailure: (count: number) => {
+          errorCount = count
+        },
+      }),
+    )
 
-    // Print warnings regardless of success/failure
-    for (const warning of result.warnings) {
-      console.log(`  warning: ${warning}`)
-    }
-
-    if (!result.ok) {
-      console.log('Build failed:\n')
-      for (const error of result.errors) {
-        const path = error.path ? `${error.path}: ` : ''
-        console.log(`  error: ${path}${error.message}`)
-      }
+    try {
+      await instance.waitUntilExit()
+      // Ink has unmounted — print stdout summary for scroll-back
+      process.stdout.write(`✓ Built ${buildName} v${buildVersion} → dist/ (${artifactCount} artifacts)\n`)
+      return 0
+    } catch {
+      process.stdout.write(`✗ Build failed — ${errorCount} error${errorCount !== 1 ? 's' : ''}\n`)
       return 1
     }
-
-    // Write build output
-    await writeBuildOutput(result.data, rootDir)
-
-    console.log('Build succeeded.')
-    console.log('  Output written to dist/')
-    return 0
   },
 }

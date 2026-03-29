@@ -1,5 +1,5 @@
-import { buildCommand } from '../commands/build.ts'
-import { createCommand } from '../commands/create.ts'
+import { buildCommand } from './commands/build.ts'
+import { createCommand } from './commands/create/index.ts'
 
 export type Command = {
   name: string

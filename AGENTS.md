@@ -1,3 +1,41 @@
+## Source Code Map
+
+Turborepo monorepo with Bun workspaces. Two packages under `packages/`.
+
+### `packages/core` — `@ex-machina/facet-core`
+
+Facet manifest parsing, validation, and build pipeline. Entry point: `src/index.ts`
+
+```
+src/
+├── schemas/        # Arktype schemas (facet manifest, lockfile, server manifest)
+├── loaders/        # Load and validate facet.yaml / server manifests from disk
+├── build/          # Build pipeline: collision detection, validation, output writing
+├── types.ts        # Shared type definitions
+├── index.ts        # Public API entry point
+└── __tests__/      # Unit tests
+```
+
+### `packages/cli` — `@ex-machina/facet`
+
+CLI binary (`facet`). Entry point: `src/cli.ts`
+
+```
+src/
+├── commands/       # Command implementations (build, create)
+├── cli/            # CLI framework: arg parsing, help, version, suggestions
+├── cli.ts          # CLI entry point
+└── __tests__/      # Unit tests
+```
+
+### Other directories
+
+| Directory       | Purpose                                              |
+| --------------- | ---------------------------------------------------- |
+| `architecture/` | Architecture Decision Records (ADRs)                 |
+| `docs/`         | Mintlify documentation site                          |
+| `scripts/`      | Repo-level utility scripts                           |
+| `openspec/`     | OpenSpec change management (specs, schemas, changes) |
 
 ## Strategy
 

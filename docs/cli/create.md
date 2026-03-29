@@ -26,10 +26,10 @@ Creates a new facet project in the specified directory (defaults to the current 
 
 On confirmation, the wizard writes:
 
-- `facet.yaml` — the manifest with the selected asset types and starter descriptors
-- `skills/example-skill.md` — starter skill template (if skills selected)
-- `agents/example-agent.md` — starter agent template (if agents selected)
-- `commands/example-command.md` — starter command template (if commands selected)
+- `facet.yaml` — the manifest with named asset descriptors
+- `skills/<name>.md` — starter skill template for each named skill
+- `agents/<name>.md` — starter agent template for each named agent
+- `commands/<name>.md` — starter command template for each named command
 
 After creating the project, run `facet build` to validate it.
 

@@ -1,4 +1,4 @@
-import { run } from './cli/run.ts'
+import { run } from './run.ts'
 
 try {
   const code = await run(process.argv.slice(2))

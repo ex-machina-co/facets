@@ -3,51 +3,34 @@ import type { ValidationError } from '../types.ts'
 
 type AssetType = 'skill' | 'agent' | 'command'
 
-interface AssetEntry {
-  name: string
-  type: AssetType
-}
-
 /**
- * Detects naming collisions across skills, agents, and commands.
- * Skills, agents, and commands share a namespace — duplicate names
- * across asset types are an error.
+ * Detects naming collisions within each asset type.
+ * Skills must have unique names within skills, agents within agents,
+ * and commands within commands. Cross-type duplicates are allowed —
+ * a skill and an agent may share the same name.
  */
 export function detectNamingCollisions(manifest: FacetManifest): ValidationError[] {
   const errors: ValidationError[] = []
-  const seen = new Map<string, AssetType>()
 
-  const assets: AssetEntry[] = []
-
-  if (manifest.skills) {
-    for (const name of Object.keys(manifest.skills)) {
-      assets.push({ name, type: 'skill' })
-    }
-  }
-  if (manifest.agents) {
-    for (const name of Object.keys(manifest.agents)) {
-      assets.push({ name, type: 'agent' })
-    }
-  }
-  if (manifest.commands) {
-    for (const name of Object.keys(manifest.commands)) {
-      assets.push({ name, type: 'command' })
+  const checkDuplicates = (names: string[], type: AssetType) => {
+    const seen = new Set<string>()
+    for (const name of names) {
+      if (seen.has(name)) {
+        errors.push({
+          path: name,
+          message: `Naming collision: "${name}" is declared more than once in ${type}s`,
+          expected: `unique name within ${type}s`,
+          actual: `"${name}" appears multiple times in ${type}s`,
+        })
+      } else {
+        seen.add(name)
+      }
     }
   }
 
-  for (const asset of assets) {
-    const existing = seen.get(asset.name)
-    if (existing) {
-      errors.push({
-        path: asset.name,
-        message: `Naming collision: "${asset.name}" is declared as both a ${existing} and a ${asset.type}`,
-        expected: 'unique name across all asset types',
-        actual: `"${asset.name}" used by ${existing} and ${asset.type}`,
-      })
-    } else {
-      seen.set(asset.name, asset.type)
-    }
-  }
+  if (manifest.skills) checkDuplicates(Object.keys(manifest.skills), 'skill')
+  if (manifest.agents) checkDuplicates(Object.keys(manifest.agents), 'agent')
+  if (manifest.commands) checkDuplicates(Object.keys(manifest.commands), 'command')
 
   return errors
 }
