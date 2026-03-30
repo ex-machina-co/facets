@@ -20,7 +20,7 @@ A facet name (or name@version) to install.
 
 1. **Download the facet archive.** Query the registry for the facet at the requested version (or latest if no version specified). Download the archive. Verify the content hash against the registry's recorded hash (see [Integrity Model](/specification/integrity)). A hash mismatch MUST be a hard failure — the archive MUST be rejected.
 
-2. **Read the manifest.** Parse `facet.yaml` from the archive.
+2. **Read the manifest.** Parse the facet manifest from the archive.
 
 3. **Present text assets for review.** Implementors SHOULD show the consumer a summary of all text assets to be installed. The consumer SHOULD be able to inspect any individual asset before accepting. If an asset with the same name already exists on disk (collision), the consumer MUST be presented with options to resolve it: accept the facet's version, keep the existing content as an override, or create a new override.
 

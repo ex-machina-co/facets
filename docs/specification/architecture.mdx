@@ -21,7 +21,7 @@ Facets and MCP servers are fundamentally different artifacts with different life
 
 ### Facets
 
-A facet is a named, versioned collection of text assets — skills, agents, and commands — defined by a manifest (`facet.yaml`). Facets MAY compose text from other published facets. Facets MAY reference MCP servers, but server code is never included in the facet.
+A facet is a named, versioned collection of text assets — skills, agents, and commands — defined by a facet manifest. Facets MAY compose text from other published facets. Facets MAY reference MCP servers, but server code is never included in the facet.
 
 When published, the registry assembles a **facet archive**: the manifest plus all text assets (locally authored and composed). The archive is self-contained — consumers need no further text resolution at install time.
 
@@ -54,7 +54,7 @@ This separation exists because text and code have different update characteristi
 
 ### Authoring
 
-An author creates a facet: a `facet.yaml` manifest and the associated text asset files (skills, agent prompts, command prompts) in a local directory. The manifest declares the facet's identity, its text assets, any composed facets, and any server references.
+An author creates a facet: a facet manifest (`facet.json`) and the associated text asset files (skills, agent prompts, command prompts) in a local directory. The manifest declares the facet's identity, its text assets, any composed facets, and any server references.
 
 ### Publishing
 
@@ -70,7 +70,7 @@ The installed facet is loaded by the AI assistant. Text assets are in the assist
 
 ## Design Principles
 
-1. **Manifest immutability.** The build and publish process MUST NOT modify the manifest. The author's `facet.yaml` is included as-is in the facet archive.
+1. **Manifest immutability.** The build and publish process MUST NOT modify the manifest. The author's facet manifest is included as-is in the facet archive.
 
 2. **Server-side composition.** Text composition MUST be performed by the registry from its own trusted storage. This prevents supply chain attacks where an author replaces composed content with malicious prompts while the manifest still attributes the content to trusted sources.
 

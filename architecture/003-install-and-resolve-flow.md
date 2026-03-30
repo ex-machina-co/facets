@@ -45,7 +45,7 @@ This ADR defines what happens during `facet install` and `facet upgrade`.
 
 1. **Download the facet bundle.** Query the registry for the facet at the requested version (or latest if no version specified). Download the bundle artifact. Verify the content hash against the registry's recorded hash (ADR-004).
 
-2. **Read the manifest.** Parse the `facet.yaml` from the bundle.
+2. **Read the manifest.** Parse the facet manifest from the bundle.
 
 3. **Present text assets for review.** Show the consumer a summary of all text assets to be installed (asset count by type, names). The consumer can inspect any individual asset before accepting. If an asset with the same name already exists on disk (collision), present the consumer with options: accept the facet's version, keep the existing content as an override, or create a new override. An accept-all fast path is available for consumers who trust the publisher.
 
@@ -68,28 +68,31 @@ This ADR defines what happens during `facet install` and `facet upgrade`.
 
 6. **Write the lockfile.** Record the exact resolved versions and content hashes:
 
-    ```yaml
-    # facets.lock
-    facet:
-      name: acme-dev
-      version: "1.0.0"
-      integrity: "sha256:abc123..."
-
-    servers:
-      # Source-mode server
-      jira:
-        version: "1.5.2"
-        integrity: "sha256:def456..."
-        api_surface: "sha256:789abc..."
-      github:
-        version: "2.4.0"
-        integrity: "sha256:ghi012..."
-        api_surface: "sha256:345def..."
-      # Ref-mode server
-      slack:
-        image: "ghcr.io/acme/slack-bot:v2"
-        digest: "sha256:e4d909..."
-        api_surface: "sha256:567ghi..."
+    ```json
+    {
+      "facet": {
+        "name": "acme-dev",
+        "version": "1.0.0",
+        "integrity": "sha256:abc123..."
+      },
+      "servers": {
+        "jira": {
+          "version": "1.5.2",
+          "integrity": "sha256:def456...",
+          "api_surface": "sha256:789abc..."
+        },
+        "github": {
+          "version": "2.4.0",
+          "integrity": "sha256:ghi012...",
+          "api_surface": "sha256:345def..."
+        },
+        "slack": {
+          "image": "ghcr.io/acme/slack-bot:v2",
+          "digest": "sha256:e4d909...",
+          "api_surface": "sha256:567ghi..."
+        }
+      }
+    }
     ```
 
 7. **Configure servers for the active platform.** For each resolved server, generate the platform-specific configuration needed to start the server (e.g., MCP server config entries for the active AI assistant). Platform configuration details are handled by the CLI's platform adapters.

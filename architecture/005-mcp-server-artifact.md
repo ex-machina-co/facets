@@ -11,6 +11,7 @@ decision-makers: julian
 | status   | date       | decision-makers | github |
 | -------- | ---------- | --------------- | ------ |
 | proposed | 2026-03-05 | julian          |        |
+| modified by ADR-006: manifest serialization format | 2026-03-29 | julian          |        |
 
 ## Context and Problem Statement
 
@@ -49,13 +50,15 @@ A facet references servers by name in its `servers` section (ADR-001). This ADR 
 
 Source-mode servers are published to the facets registry. Each has a manifest:
 
-```yaml
-name: jira
-version: "1.5.0"
-description: "Jira integration — create, search, update, and transition issues"
-author: acme-org
-runtime: bun
-entry: index.ts
+```json
+{
+  "name": "jira",
+  "version": "1.5.0",
+  "description": "Jira integration — create, search, update, and transition issues",
+  "author": "acme-org",
+  "runtime": "bun",
+  "entry": "index.ts"
+}
 ```
 
 | Field         | Required | Description                                                     |
@@ -73,10 +76,14 @@ There is no `type` field — if it's published to the facets registry as a serve
 
 Ref-mode servers have no manifest in the facets registry. They are declared directly in a facet's `servers` section:
 
-```yaml
-servers:
-  slack:
-    image: "ghcr.io/acme/slack-bot:v2"
+```json
+{
+  "servers": {
+    "slack": {
+      "image": "ghcr.io/acme/slack-bot:v2"
+    }
+  }
+}
 ```
 
 That's it. The image reference follows standard OCI conventions — `:` for tags, `@` for digests. The CLI resolves tags to digests at install time and pins the digest in the lockfile (ADR-004).

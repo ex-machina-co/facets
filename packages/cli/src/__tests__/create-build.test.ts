@@ -60,24 +60,25 @@ describe('writeScaffold', () => {
       dir,
     )
 
-    expect(files).toContain('facet.yaml')
+    expect(files).toContain('facet.json')
     expect(files).toContain('skills/code-review.md')
     expect(files).toContain('skills/testing-guide.md')
     expect(files).toContain('agents/reviewer.md')
     expect(files).toContain('commands/deploy.md')
 
-    // Verify manifest content
-    const manifest = await Bun.file(join(dir, 'facet.yaml')).text()
-    expect(manifest).toContain('name: my-facet')
-    expect(manifest).toContain('version: "0.1.0"')
-    expect(manifest).toContain('description: "A test facet"')
-    expect(manifest).toContain('skills:')
-    expect(manifest).toContain('code-review:')
-    expect(manifest).toContain('testing-guide:')
-    expect(manifest).toContain('agents:')
-    expect(manifest).toContain('reviewer:')
-    expect(manifest).toContain('commands:')
-    expect(manifest).toContain('deploy:')
+    // Verify manifest content (JSON)
+    const manifestText = await Bun.file(join(dir, 'facet.json')).text()
+    const manifest = JSON.parse(manifestText)
+    expect(manifest.name).toBe('my-facet')
+    expect(manifest.version).toBe('0.1.0')
+    expect(manifest.description).toBe('A test facet')
+    expect(manifest.skills).toBeDefined()
+    expect(manifest.skills['code-review']).toBeDefined()
+    expect(manifest.skills['testing-guide']).toBeDefined()
+    expect(manifest.agents).toBeDefined()
+    expect(manifest.agents.reviewer).toBeDefined()
+    expect(manifest.commands).toBeDefined()
+    expect(manifest.commands.deploy).toBeDefined()
 
     // Verify starter files exist and have named template content
     const skill = await Bun.file(join(dir, 'skills/code-review.md')).text()
@@ -107,15 +108,16 @@ describe('writeScaffold', () => {
       dir,
     )
 
-    expect(files).toContain('facet.yaml')
+    expect(files).toContain('facet.json')
     expect(files).toContain('skills/minimal.md')
     expect(files).not.toContain('agents/')
     expect(files).not.toContain('commands/')
 
-    const manifest = await Bun.file(join(dir, 'facet.yaml')).text()
-    expect(manifest).toContain('skills:')
-    expect(manifest).not.toContain('agents:')
-    expect(manifest).not.toContain('commands:')
+    const manifestText = await Bun.file(join(dir, 'facet.json')).text()
+    const manifest = JSON.parse(manifestText)
+    expect(manifest.skills).toBeDefined()
+    expect(manifest.agents).toBeUndefined()
+    expect(manifest.commands).toBeUndefined()
   })
 
   test('scaffolded project passes build', async () => {
@@ -145,7 +147,7 @@ describe('writeScaffold', () => {
     expect(distManifest).toBe(true)
 
     // No loose files
-    const looseManifest = await Bun.file(join(dir, 'dist/facet.yaml')).exists()
+    const looseManifest = await Bun.file(join(dir, 'dist/facet.json')).exists()
     expect(looseManifest).toBe(false)
   })
 })
@@ -157,15 +159,16 @@ describe('facet build', () => {
     const dir = await createFixtureDir('build-valid')
     await Bun.write(join(dir, 'skills/review.md'), '# Review skill content')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  review:
-    description: "Code review skill"
-    prompt: { file: skills/review.md }
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          review: {
+            description: 'Code review skill',
+          },
+        },
+      }),
     )
 
     const result = await runCli('build', dir)
@@ -185,15 +188,16 @@ skills:
   test('build fails on missing asset file', async () => {
     const dir = await createFixtureDir('build-missing-file')
     await Bun.write(
-      join(dir, 'facet.yaml'),
-      `
-name: test-facet
-version: "1.0.0"
-skills:
-  review:
-    description: "Code review skill"
-    prompt: { file: skills/nonexistent.md }
-`,
+      join(dir, 'facet.json'),
+      JSON.stringify({
+        name: 'test-facet',
+        version: '1.0.0',
+        skills: {
+          review: {
+            description: 'Code review skill',
+          },
+        },
+      }),
     )
 
     const result = await runCli('build', dir)

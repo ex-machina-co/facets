@@ -12,7 +12,6 @@ describe('FacetManifestSchema — valid manifests', () => {
       skills: {
         'code-review': {
           description: 'Reviews code for issues',
-          prompt: { file: 'skills/code-review.md' },
         },
       },
     }
@@ -22,7 +21,6 @@ describe('FacetManifestSchema — valid manifests', () => {
     expect(data.name).toBe('my-facet')
     expect(data.version).toBe('1.0.0')
     expect(data.skills?.['code-review']?.description).toBe('Reviews code for issues')
-    expect(data.skills?.['code-review']?.prompt).toEqual({ file: 'skills/code-review.md' })
   })
 
   test('full manifest with all sections', () => {
@@ -34,30 +32,25 @@ describe('FacetManifestSchema — valid manifests', () => {
       skills: {
         'code-standards': {
           description: 'Org coding standards',
-          prompt: { file: 'skills/code-standards.md' },
         },
         'pr-template': {
           description: 'PR template guidelines',
-          prompt: { file: 'skills/pr-template.md' },
         },
       },
       agents: {
         reviewer: {
           description: 'Org code reviewer',
-          prompt: { file: 'agents/reviewer.md' },
           platforms: {
             opencode: { tools: { grep: true, bash: true } },
           },
         },
         'quick-check': {
           description: 'Fast lint check',
-          prompt: 'Review for style issues only.',
         },
       },
       commands: {
         review: {
           description: 'Run a code review',
-          prompt: { file: 'commands/review.md' },
         },
       },
       facets: [
@@ -79,10 +72,8 @@ describe('FacetManifestSchema — valid manifests', () => {
     expect(result).not.toBeInstanceOf(type.errors)
     const data = result as FacetManifest
     expect(data.name).toBe('acme-dev')
-    expect(data.agents?.reviewer?.prompt).toEqual({
-      file: 'agents/reviewer.md',
-    })
-    expect(data.agents?.['quick-check']?.prompt).toBe('Review for style issues only.')
+    expect(data.agents?.reviewer?.description).toBe('Org code reviewer')
+    expect(data.agents?.['quick-check']?.description).toBe('Fast lint check')
     expect(data.servers?.jira).toBe('1.0.0')
     expect(data.servers?.slack).toEqual({
       image: 'ghcr.io/acme/slack-bot:v2',
@@ -107,36 +98,36 @@ describe('FacetManifestSchema — valid manifests', () => {
 
 describe('FacetManifestSchema — invalid manifests', () => {
   test('missing name', () => {
-    const input = { version: '1.0.0', skills: { x: { description: 'A skill', prompt: 'Do x' } } }
+    const input = { version: '1.0.0', skills: { x: { description: 'A skill' } } }
     const result = FacetManifestSchema(input)
     expect(result).toBeInstanceOf(type.errors)
   })
 
   test('missing version', () => {
-    const input = { name: 'my-facet', skills: { x: { description: 'A skill', prompt: 'Do x' } } }
+    const input = { name: 'my-facet', skills: { x: { description: 'A skill' } } }
     const result = FacetManifestSchema(input)
     expect(result).toBeInstanceOf(type.errors)
   })
 
-  test('agent missing prompt', () => {
+  test('agent missing description', () => {
     const input = {
       name: 'my-facet',
       version: '1.0.0',
       agents: {
-        reviewer: { description: 'No prompt here' },
+        reviewer: { platforms: { opencode: {} } },
       },
     }
     const result = FacetManifestSchema(input)
     expect(result).toBeInstanceOf(type.errors)
     const errors = result as InstanceType<typeof type.errors>
-    expect(errors.some((e) => e.path.includes('reviewer') && e.path.includes('prompt'))).toBe(true)
+    expect(errors.some((e) => e.path.includes('reviewer') && e.path.includes('description'))).toBe(true)
   })
 
   test('server reference object without image field', () => {
     const input = {
       name: 'my-facet',
       version: '1.0.0',
-      skills: { x: { description: 'A skill', prompt: 'Do x' } },
+      skills: { x: { description: 'A skill' } },
       servers: {
         bad: { notImage: 'ghcr.io/something' },
       },
@@ -175,7 +166,6 @@ describe('checkFacetManifestConstraints', () => {
     const result = FacetManifestSchema(input)
     expect(result).not.toBeInstanceOf(type.errors)
     const errors = checkFacetManifestConstraints(result as FacetManifest)
-    // Should have the selective entry error (and possibly the "no text" error if selective with no selections doesn't count)
     const selectiveError = errors.find((e) => e.message.includes('at least one asset type'))
     expect(selectiveError).toBeDefined()
     expect(selectiveError?.path).toBe('facets[0]')
@@ -189,7 +179,7 @@ describe('FacetManifestSchema — unknown field tolerance', () => {
     const input = {
       name: 'my-facet',
       version: '1.0.0',
-      skills: { x: { description: 'A skill', prompt: 'Do x' } },
+      skills: { x: { description: 'A skill' } },
       license: 'MIT',
     }
     const result = FacetManifestSchema(input)
@@ -204,7 +194,7 @@ describe('FacetManifestSchema — unknown field tolerance', () => {
       version: '1.0.0',
       agents: {
         reviewer: {
-          prompt: 'Review code',
+          description: 'A reviewer agent',
           model: 'claude-sonnet',
         },
       },

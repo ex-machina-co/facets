@@ -2,27 +2,21 @@ import { type } from 'arktype'
 
 // --- Sub-schemas ---
 
-/** Prompt field: inline string or file reference */
-const Prompt = type('string').or({ file: 'string' })
-
-/** Skill descriptor — description is required for skills */
+/** Skill descriptor — description is required, prompt resolved from skills/<name>.md */
 const SkillDescriptor = type({
   description: 'string',
-  prompt: Prompt,
   'platforms?': type.Record('string', 'unknown'),
 })
 
-/** Agent descriptor */
+/** Agent descriptor — description is required, prompt resolved from agents/<name>.md */
 const AgentDescriptor = type({
-  'description?': 'string',
-  prompt: Prompt,
+  description: 'string',
   'platforms?': type.Record('string', 'unknown'),
 })
 
-/** Command descriptor */
+/** Command descriptor — description is required, prompt resolved from commands/<name>.md */
 const CommandDescriptor = type({
-  'description?': 'string',
-  prompt: Prompt,
+  description: 'string',
 })
 
 /** Selective facets entry — cherry-pick specific assets from another facet */
@@ -43,9 +37,9 @@ const ServerReference = type('string').or({ image: 'string' })
 // --- Main schema ---
 
 /**
- * The structural schema for facet.yaml — validates shape only.
+ * The structural schema for the facet manifest — validates shape only.
  * Custom constraints (at least one text asset, selective entry must select at least one type)
- * are checked post-validation by validateFacetManifest().
+ * are checked post-validation by checkFacetManifestConstraints().
  */
 export const FacetManifestSchema = type({
   name: 'string',

@@ -15,7 +15,7 @@ Creates a new facet project in the specified directory (defaults to the current 
 
 ## Wizard flow
 
-1. **Existing manifest check** — if `facet.yaml` already exists, prompts for confirmation before overwriting.
+1. **Existing manifest check** — if `facet.json` already exists, prompts for confirmation before overwriting.
 2. **Name** — the facet name, in kebab-case (e.g., `my-facet`).
 3. **Version** — defaults to `0.1.0`.
 4. **Description** — optional.
@@ -26,7 +26,7 @@ Creates a new facet project in the specified directory (defaults to the current 
 
 On confirmation, the wizard writes:
 
-- `facet.yaml` — the manifest with named asset descriptors
+- `facet.json` — the manifest with named asset descriptors
 - `skills/<name>.md` — starter skill template for each named skill
 - `agents/<name>.md` — starter agent template for each named agent
 - `commands/<name>.md` — starter command template for each named command

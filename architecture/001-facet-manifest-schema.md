@@ -14,6 +14,7 @@ decision-makers: julian
 | accepted                                           | 2026-03-27 | julian          |        |
 | modified by change: local-authoring                | 2026-03-27 | julian          |        |
 | modified by ADR-006: manifest serialization format | 2026-03-28 | julian          |        |
+| modified by change: json-manifest-migration        | 2026-03-29 | julian          |        |
 
 ## Context and Problem Statement
 
@@ -40,49 +41,54 @@ This ADR defines the manifest schema at the spec level — what fields exist, wh
 
 The facet manifest has the following structure.
 
-> **Note:** This ADR defines the manifest schema. The serialization format is JSON, governed by ADR-006 (Manifest Serialization Format). Examples below use YAML for clarity; the canonical format is JSON.
-
 ### Example
 
-```yaml
-name: acme-dev
-version: 1.0.0
-description: "Acme org developer toolkit"
-author: acme-org
-
-skills:
-  code-standards:
-    description: "Org coding standards"
-    prompt: { file: skills/code-standards.md }
-  pr-template:
-    description: "PR template guidelines"
-    prompt: { file: skills/pr-template.md }
-
-agents:
-  reviewer:
-    description: "Org code reviewer"
-    prompt: { file: agents/reviewer.md }
-    platforms:
-      opencode:
-        tools: { grep: true, bash: true }
-
-commands:
-  review:
-    description: "Run a code review"
-    prompt: { file: commands/review.md }
-
-facets:
-  - "code-review-base@1.0.0"
-  - name: typescript-patterns
-    version: "2.1.0"
-    skills: [ts-conventions, any-usage]
-
-servers:
-  jira: "1.0.0"
-  github: "2.3.0"
-  "@acme/deploy": "0.5.0"
-  slack:
-    image: "ghcr.io/acme/slack-bot:v2"
+```json
+{
+  "name": "acme-dev",
+  "version": "1.0.0",
+  "description": "Acme org developer toolkit",
+  "author": "acme-org",
+  "skills": {
+    "code-standards": {
+      "description": "Org coding standards"
+    },
+    "pr-template": {
+      "description": "PR template guidelines"
+    }
+  },
+  "agents": {
+    "reviewer": {
+      "description": "Org code reviewer",
+      "platforms": {
+        "opencode": {
+          "tools": { "grep": true, "bash": true }
+        }
+      }
+    }
+  },
+  "commands": {
+    "review": {
+      "description": "Run a code review"
+    }
+  },
+  "facets": [
+    "code-review-base@1.0.0",
+    {
+      "name": "typescript-patterns",
+      "version": "2.1.0",
+      "skills": ["ts-conventions", "any-usage"]
+    }
+  ],
+  "servers": {
+    "jira": "1.0.0",
+    "github": "2.3.0",
+    "@acme/deploy": "0.5.0",
+    "slack": {
+      "image": "ghcr.io/acme/slack-bot:v2"
+    }
+  }
+}
 ```
 
 ### Sections
@@ -98,28 +104,36 @@ servers:
 
 **Text artifacts** — locally authored content included in the facet:
 
-| Field      | Required | Description                                                                  |
-| ---------- | -------- | ---------------------------------------------------------------------------- |
-| `skills`   | No       | Map of skill name → skill descriptor (description, prompt, platform config). |
-| `agents`   | No       | Map of agent name → agent descriptor (description, prompt, platform config). |
-| `commands` | No       | Map of command name → command descriptor (description, prompt).              |
+| Field      | Required | Description                                                                |
+| ---------- | -------- | -------------------------------------------------------------------------- |
+| `skills`   | No       | Map of skill name → skill descriptor (description, platform config).       |
+| `agents`   | No       | Map of agent name → agent descriptor (description, platform config).       |
+| `commands` | No       | Map of command name → command descriptor (description).                    |
 
 **`facets`** — text composed from other facets. Each entry is either a compact string or a selective object.
 
 Compact form (take all text artifacts from the referenced facet):
-```yaml
-facets:
-  - "code-review-base@1.0.0"
+```json
+{
+  "facets": [
+    "code-review-base@1.0.0"
+  ]
+}
 ```
 
 Selective form (cherry-pick specific components):
-```yaml
-facets:
-  - name: typescript-patterns
-    version: "2.1.0"
-    skills: [ts-conventions]
-    agents: [baseline-reviewer]
-    commands: [lint-check]
+```json
+{
+  "facets": [
+    {
+      "name": "typescript-patterns",
+      "version": "2.1.0",
+      "skills": ["ts-conventions"],
+      "agents": ["baseline-reviewer"],
+      "commands": ["lint-check"]
+    }
+  ]
+}
 ```
 
 | Field      | Context   | Required | Description                                          |
@@ -136,17 +150,24 @@ Composition is resolved before the artifact reaches the registry. The `facets` s
 **`servers`** — MCP server references. MCP servers are a separate artifact type from facets. The `servers` section declares which servers this facet needs. There are two forms depending on the server's execution mode:
 
 **Source-mode** (server published to the facets registry): string value is a floor version constraint.
-```yaml
-servers:
-  jira: "1.0.0"
-  "@acme/deploy": "0.5.0"
+```json
+{
+  "servers": {
+    "jira": "1.0.0",
+    "@acme/deploy": "0.5.0"
+  }
+}
 ```
 
 **Ref-mode** (OCI container image): object value with an `image` field referencing an OCI image.
-```yaml
-servers:
-  slack:
-    image: "ghcr.io/acme/slack-bot:v2"
+```json
+{
+  "servers": {
+    "slack": {
+      "image": "ghcr.io/acme/slack-bot:v2"
+    }
+  }
+}
 ```
 
 | Key         | Value type | Description                                                                    |
@@ -164,11 +185,10 @@ servers:
 
 | Field         | Required | Description                                                            |
 | ------------- | -------- | ---------------------------------------------------------------------- |
-| `description` | No       | Human-readable description of the agent.                               |
-| `prompt`      | Yes      | The agent's prompt — a string or `{ file: path }`.                    |
+| `description` | Yes      | Human-readable description of the agent.                               |
 | `platforms`   | No       | Map of platform name → platform-specific agent config (tools, etc.).   |
 
-Agents are partially platform-specific. The prompt is portable across AI assistants. Platform-specific wiring (tool access, permissions, model preferences) lives under `platforms`. Authors target the platforms they care about.
+Agents are partially platform-specific. The agent's prompt content lives in a file at the conventional path `agents/<name>.md`. Platform-specific wiring (tool access, permissions, model preferences) lives under `platforms`. Authors target the platforms they care about.
 
 The CLI validates platform config against known platform schemas at build and publish time. At install time, platform config is composed into the agent's platform-native format (e.g., YAML frontmatter). The set of known platforms and their schemas is maintained by the CLI, not the manifest spec.
 
@@ -177,17 +197,15 @@ The CLI validates platform config against known platform schemas at build and pu
 | Field         | Required | Description                                                            |
 | ------------- | -------- | ---------------------------------------------------------------------- |
 | `description` | Yes      | Human-readable description of the skill.                               |
-| `prompt`      | Yes      | The skill's prompt — a string or `{ file: path }`.                    |
 | `platforms`   | No       | Map of platform name → platform-specific skill config.                 |
 
-Skills require both a description and a prompt — consumers need to know what a skill does to decide whether to use it. Agents and commands have optional descriptions because their names and prompts are typically sufficient context. All three asset types share the same descriptor structure (name → descriptor with prompt and optional platform config), with skills being stricter about requiring a description.
+The skill's prompt content lives in a file at the conventional path `skills/<name>.md`. All three descriptor types require a description — consumers need to know what an asset does to decide whether to use it. Prompt content is resolved from conventional file paths (`<type>/<name>.md`) rather than declared in the manifest.
 
 **Command descriptor:**
 
 | Field         | Required | Description                                                            |
 | ------------- | -------- | ---------------------------------------------------------------------- |
-| `description` | No       | Human-readable description of the command.                             |
-| `prompt`      | Yes      | The command's prompt — a string or `{ file: path }`.                  |
+| `description` | Yes      | Human-readable description of the command.                             |
 
 ### Key Properties
 

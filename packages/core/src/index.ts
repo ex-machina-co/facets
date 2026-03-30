@@ -18,8 +18,10 @@ export { validatePlatformConfigs } from './build/validate-platforms.ts'
 export { writeBuildOutput } from './build/write-output.ts'
 export type { ResolvedFacetManifest } from './loaders/facet.ts'
 // loaders
-export { loadManifest, resolvePrompts } from './loaders/facet.ts'
+export { FACET_MANIFEST_FILE, loadManifest, resolvePrompts } from './loaders/facet.ts'
 export { loadServerManifest } from './loaders/server.ts'
+export type { BuildManifest } from './schemas/build-manifest.ts'
+export { BuildManifestSchema } from './schemas/build-manifest.ts'
 export type { FacetManifest } from './schemas/facet-manifest.ts'
 // schemas
 export {

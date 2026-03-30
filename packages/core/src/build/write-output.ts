@@ -1,5 +1,6 @@
 import { mkdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
+import type { BuildManifest } from '../schemas/build-manifest.ts'
 import type { BuildResult } from './pipeline.ts'
 
 const DIST_DIR = 'dist'
@@ -23,7 +24,7 @@ export async function writeBuildOutput(result: BuildResult, rootDir: string): Pr
   await Bun.write(join(distDir, result.archiveFilename), result.archiveBytes)
 
   // Write build manifest
-  const manifest = {
+  const manifest: BuildManifest = {
     facetVersion: 1,
     archive: result.archiveFilename,
     integrity: result.integrity,

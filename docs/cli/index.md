@@ -26,7 +26,7 @@ The `facet` CLI helps you create, build, and manage facets — portable bundles 
     Removes a **facet** from `facets.yaml`
   </Card>
   <Card title={<Badge>facet install</Badge>} href="/docs/cli/install">
-    Installs all **facets** from `facet.yaml`
+    Installs all **facets** from the facet manifest
   </Card>
   <Card title={<Badge>facet upgrade</Badge>} href="/docs/cli/upgrade">
     Upgrades installed **facets** through an interactive CLI

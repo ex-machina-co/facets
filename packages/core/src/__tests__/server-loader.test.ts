@@ -31,15 +31,15 @@ describe('loadServerManifest', () => {
     const dir = await createFixtureDir('valid-server')
     await writeFixture(
       dir,
-      'server.yaml',
-      `
-name: jira
-version: "1.5.0"
-runtime: bun
-entry: index.ts
-description: "Jira integration"
-author: acme-org
-`,
+      'server.json',
+      JSON.stringify({
+        name: 'jira',
+        version: '1.5.0',
+        runtime: 'bun',
+        entry: 'index.ts',
+        description: 'Jira integration',
+        author: 'acme-org',
+      }),
     )
 
     const result = await loadServerManifest(dir)
@@ -65,14 +65,14 @@ author: acme-org
     }
   })
 
-  test('malformed YAML', async () => {
+  test('malformed JSON', async () => {
     const dir = await createFixtureDir('malformed-server')
-    await writeFixture(dir, 'server.yaml', `name: [unterminated`)
+    await writeFixture(dir, 'server.json', '{ "name": [unterminated')
 
     const result = await loadServerManifest(dir)
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.errors.at(0)?.message).toContain('YAML syntax error')
+      expect(result.errors.at(0)?.message).toContain('JSON syntax error')
     }
   })
 
@@ -80,11 +80,11 @@ author: acme-org
     const dir = await createFixtureDir('invalid-server')
     await writeFixture(
       dir,
-      'server.yaml',
-      `
-name: jira
-version: "1.5.0"
-`,
+      'server.json',
+      JSON.stringify({
+        name: 'jira',
+        version: '1.5.0',
+      }),
     )
 
     const result = await loadServerManifest(dir)

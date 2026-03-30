@@ -32,12 +32,12 @@ The system SHALL assemble all resolved build output into a single compressed arc
 
 - **WHEN** a facet named "example-facet" at version "1.0.0" is built successfully
 - **THEN** the system SHALL write `dist/example-facet-1.0.0.facet`
-- **AND** the archive SHALL contain `facet.yaml` and all resolved text asset files
+- **AND** the archive SHALL contain the facet manifest and all resolved text asset files
 
 #### Scenario: Archive contains all declared assets
 
 - **WHEN** a facet with two skills, one agent, and one command is built
-- **THEN** the archive SHALL contain `facet.yaml`, two skill files, the agent file, and the command file
+- **THEN** the archive SHALL contain the facet manifest, two skill files, the agent file, and the command file
 
 #### Scenario: Archive does not contain extraneous files
 
@@ -116,7 +116,7 @@ The `dist/` directory SHALL contain exactly the compressed archive and the build
 
 - **WHEN** a facet is built successfully
 - **THEN** `dist/` SHALL contain exactly the `.facet` archive file and `build-manifest.json`
-- **AND** `dist/` SHALL NOT contain loose `facet.yaml`, `skills/`, `agents/`, or `commands/` files
+- **AND** `dist/` SHALL NOT contain loose facet manifest, `skills/`, `agents/`, or `commands/` files
 
 #### Scenario: Previous build output is cleaned
 

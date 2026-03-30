@@ -52,17 +52,17 @@ describe('collectArchiveEntries', () => {
         review: { description: 'Review skill', prompt: '# Review' },
       },
       agents: {
-        helper: { prompt: '# Helper' },
+        helper: { description: 'Helper agent', prompt: '# Helper' },
       },
       commands: {
-        deploy: { prompt: '# Deploy' },
+        deploy: { description: 'Deploy command', prompt: '# Deploy' },
       },
     }
 
-    const entries = collectArchiveEntries(resolved, 'name: test\nversion: "1.0.0"\n')
+    const entries = collectArchiveEntries(resolved, '{"name":"test","version":"1.0.0"}')
 
     expect(entries).toHaveLength(4)
-    expect(entries.map((e) => e.path)).toContain('facet.yaml')
+    expect(entries.map((e) => e.path)).toContain('facet.json')
     expect(entries.map((e) => e.path)).toContain('skills/review.md')
     expect(entries.map((e) => e.path)).toContain('agents/helper.md')
     expect(entries.map((e) => e.path)).toContain('commands/deploy.md')
@@ -77,14 +77,14 @@ describe('collectArchiveEntries', () => {
         'a-skill': { description: 'A', prompt: '# A' },
       },
       agents: {
-        'b-agent': { prompt: '# B' },
+        'b-agent': { description: 'B', prompt: '# B' },
       },
     }
 
     const entries = collectArchiveEntries(resolved, 'manifest content')
     const paths = entries.map((e) => e.path)
 
-    expect(paths).toEqual(['agents/b-agent.md', 'facet.yaml', 'skills/a-skill.md', 'skills/z-skill.md'])
+    expect(paths).toEqual(['agents/b-agent.md', 'facet.json', 'skills/a-skill.md', 'skills/z-skill.md'])
   })
 
   test('handles manifest with no optional asset types', () => {
@@ -104,15 +104,15 @@ describe('collectArchiveEntries', () => {
 describe('computeAssetHashes', () => {
   test('returns correct hash for each entry', () => {
     const entries = [
-      { path: 'facet.yaml', content: 'name: test' },
+      { path: 'facet.json', content: '{"name":"test"}' },
       { path: 'skills/review.md', content: '# Review' },
     ]
 
     const hashes = computeAssetHashes(entries)
 
     expect(Object.keys(hashes)).toHaveLength(2)
-    expect(hashes['facet.yaml']).toMatchInlineSnapshot(
-      `"sha256:caac68cf0a60802dd7c446456edc70543f3a37ee19bd8a65f593037809bb11e6"`,
+    expect(hashes['facet.json']).toMatchInlineSnapshot(
+      `"sha256:7d9fd2051fc32b32feab10946fab6bb91426ab7e39aa5439289ed892864aa91d"`,
     )
     expect(hashes['skills/review.md']).toMatchInlineSnapshot(
       `"sha256:f1a9d9d60fba2e67d82d788760d147d95461a58456411e205bf33a6dbdc3497f"`,
@@ -133,7 +133,7 @@ describe('computeAssetHashes', () => {
 describe('assembleTar', () => {
   test('produces a valid tar archive', () => {
     const entries = [
-      { path: 'facet.yaml', content: 'name: test\nversion: "1.0.0"\n' },
+      { path: 'facet.json', content: '{"name":"test","version":"1.0.0"}' },
       { path: 'skills/review.md', content: '# Review skill' },
     ]
 
@@ -146,7 +146,7 @@ describe('assembleTar', () => {
     expect(parsed).toHaveLength(2)
 
     const names = parsed.map((f) => f.name)
-    expect(names).toContain('facet.yaml')
+    expect(names).toContain('facet.json')
     expect(names).toContain('skills/review.md')
   })
 
@@ -204,7 +204,7 @@ describe('assembleTar', () => {
 describe('compressArchive', () => {
   test('compressed archive can be decompressed to recover original tar', async () => {
     const entries = [
-      { path: 'facet.yaml', content: 'name: test\nversion: "1.0.0"\n' },
+      { path: 'facet.json', content: '{"name":"test","version":"1.0.0"}' },
       { path: 'skills/review.md', content: '# Review skill' },
     ]
 
@@ -219,7 +219,7 @@ describe('compressArchive', () => {
     expect(parsed).toHaveLength(2)
 
     const names = parsed.map((f) => f.name)
-    expect(names).toContain('facet.yaml')
+    expect(names).toContain('facet.json')
     expect(names).toContain('skills/review.md')
     expect(parsed.find((f) => f.name === 'skills/review.md')?.text).toBe('# Review skill')
   })
