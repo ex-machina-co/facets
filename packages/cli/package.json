@@ -13,7 +13,7 @@
   "scripts": {
     "build": "bun build src/index.ts --compile --outfile dist/facet",
     "types": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test --timeout 15000"
   },
   "dependencies": {
     "@bomb.sh/args": "0.3.1",

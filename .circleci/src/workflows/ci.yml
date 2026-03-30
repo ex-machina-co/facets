@@ -1,0 +1,9 @@
+jobs:
+  - check
+  - release:
+      requires:
+        - check
+      context: release
+      filters:
+        branches:
+          only: main
