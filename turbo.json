@@ -1,13 +1,14 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "globalDependencies": ["bun.lock", "package.json"],
+  "globalDependencies": ["bun.lock", "bunfig.toml", "package.json"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "outputs": ["../../test-results/**"]
     },
     "types": {
       "dependsOn": []
