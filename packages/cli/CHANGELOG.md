@@ -1,5 +1,13 @@
 # @ex-machina/facet
 
+## 0.1.1
+
+### Patch Changes
+
+- 5813b90: Small test for change set management in CI
+- Updated dependencies [5813b90]
+  - @ex-machina/facet-core@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
