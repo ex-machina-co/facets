@@ -5,6 +5,9 @@ pre-commit:
     biome:
       glob: "*.{ts,js,json}"
       run: bunx biome check {staged_files}
+    circleci-pack:
+      glob: ".circleci/src/**/*.yml"
+      run: bun run ci:pack && git add .circleci/config.yml
 
 pre-push:
   commands:

@@ -1,0 +1,64 @@
+commands:
+    setup-mise:
+        steps:
+            - checkout
+            - run:
+                command: |
+                    curl https://mise.run | sh
+                    echo 'eval "$(~/.local/bin/mise activate bash)"' >> "$BASH_ENV"
+                name: Install mise
+            - run:
+                command: mise install --yes
+                name: Install tools
+            - restore_cache:
+                keys:
+                    - v1-deps-{{ checksum "bun.lock" }}
+                    - v1-deps-
+            - run:
+                command: bun install --frozen-lockfile
+                name: Install dependencies
+            - save_cache:
+                key: v1-deps-{{ checksum "bun.lock" }}
+                paths:
+                    - node_modules
+                    - ~/.bun/install/cache
+jobs:
+    check:
+        docker:
+            - image: cimg/base:current
+        resource_class: small
+        steps:
+            - setup-mise
+            - run:
+                command: bun run check
+                name: Check
+    release:
+        docker:
+            - image: cimg/base:current
+        resource_class: small
+        steps:
+            - setup-mise
+            - run:
+                command: |
+                    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+                      | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+                    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+                      | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+                    sudo apt-get update && sudo apt-get install gh -y
+                name: Install gh CLI
+            - run:
+                command: bun scripts/ci-release.ts
+                name: Release
+version: 2.1
+workflows:
+    ci:
+        jobs:
+            - check
+            - release:
+                context: release
+                filters:
+                    branches:
+                        only: main
+                requires:
+                    - check
+

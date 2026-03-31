@@ -1,0 +1,8 @@
+docker:
+  - image: cimg/base:current
+resource_class: small
+steps:
+  - setup-mise
+  - run:
+      name: Check
+      command: bun run check

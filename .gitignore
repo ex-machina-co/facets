@@ -3,6 +3,7 @@
 lefthook-local.yml
 
 *.bun-build
+bun.lockb
 
 dist/
 docs/.mintlify/

@@ -1,0 +1,7 @@
+plans/
+node_modules
+package.json
+bun.lock
+
+opencode.json
+opencode.jsonc

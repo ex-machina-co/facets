@@ -1,3 +1,16 @@
+<CircleCI>
+
+## CircleCI Project
+
+| Key            | Value                                         |
+| -------------- | --------------------------------------------- |
+| Project Name   | facets                                        |
+| Project Slug   | `TODO: fill in after CircleCI project setup`  |
+| Git Remote URL | `git@github.com:ex-machina-co/facets.git`     |
+| Default Branch | `main`                                        |
+
+</CircleCI>
+
 ## Source Code Map
 
 Turborepo monorepo with Bun workspaces. Two packages under `packages/`.
