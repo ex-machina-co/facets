@@ -8,7 +8,7 @@
     },
     "test": {
       "dependsOn": ["build"],
-      "outputs": ["../../test-results/**"]
+      "outputs": ["$TURBO_ROOT$/test-results/**"]
     },
     "types": {
       "dependsOn": []
@@ -16,8 +16,12 @@
     "check": {
       "dependsOn": ["//#lint", "types", "test", "//#types"]
     },
-    "//#types": {},
-    "//#lint": {}
+    "//#types": {
+      "inputs": ["$TURBO_DEFAULT$", "!$TURBO_ROOT$/.changeset/**"]
+    },
+    "//#lint": {
+      "inputs": ["$TURBO_DEFAULT$", "!$TURBO_ROOT$/.changeset/**"]
+    }
   },
   "ui": "tui"
 }
