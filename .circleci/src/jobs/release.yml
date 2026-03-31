@@ -4,6 +4,9 @@ resource_class: small
 steps:
   - setup-mise
   - run:
+      name: Build
+      command: bun turbo build
+  - run:
       name: Install gh CLI
       command: |
         curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \

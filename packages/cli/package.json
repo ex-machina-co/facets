@@ -16,6 +16,7 @@
     "test": "bun test --timeout 15000"
   },
   "dependencies": {
+    "@agent-facets/brand": "workspace:*",
     "@bomb.sh/args": "0.3.1",
     "@ex-machina/facet-core": "workspace:*",
     "@types/react": "19.2.14",
@@ -35,6 +36,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": false
   }
 }
